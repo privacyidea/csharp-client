@@ -1,0 +1,6 @@
+C:\Users\T490\OneDrive\Dokumenty\GitHub\csharp-client-ws\csharp-client\Tests\bin\Debug\net6.0\CoverletSourceRootsMapping
+C:\Users\T490\OneDrive\Dokumenty\GitHub\csharp-client-ws\csharp-client\Tests\obj\Debug\net6.0\Tests.csproj.AssemblyReference.cache
+C:\Users\T490\OneDrive\Dokumenty\GitHub\csharp-client-ws\csharp-client\Tests\obj\Debug\net6.0\Tests.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\T490\OneDrive\Dokumenty\GitHub\csharp-client-ws\csharp-client\Tests\obj\Debug\net6.0\Tests.AssemblyInfoInputs.cache
+C:\Users\T490\OneDrive\Dokumenty\GitHub\csharp-client-ws\csharp-client\Tests\obj\Debug\net6.0\Tests.AssemblyInfo.cs
+C:\Users\T490\OneDrive\Dokumenty\GitHub\csharp-client-ws\csharp-client\Tests\obj\Debug\net6.0\Tests.csproj.CoreCompileInputs.cache

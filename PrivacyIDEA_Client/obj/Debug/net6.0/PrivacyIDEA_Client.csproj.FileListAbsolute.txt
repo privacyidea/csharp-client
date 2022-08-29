@@ -1,0 +1,5 @@
+C:\Users\T490\OneDrive\Dokumenty\GitHub\csharp-client-ws\csharp-client\PrivacyIDEA_Client\obj\Debug\net6.0\PrivacyIDEA_Client.csproj.AssemblyReference.cache
+C:\Users\T490\OneDrive\Dokumenty\GitHub\csharp-client-ws\csharp-client\PrivacyIDEA_Client\obj\Debug\net6.0\PrivacyIDEA_Client.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\T490\OneDrive\Dokumenty\GitHub\csharp-client-ws\csharp-client\PrivacyIDEA_Client\obj\Debug\net6.0\PrivacyIDEA_Client.AssemblyInfoInputs.cache
+C:\Users\T490\OneDrive\Dokumenty\GitHub\csharp-client-ws\csharp-client\PrivacyIDEA_Client\obj\Debug\net6.0\PrivacyIDEA_Client.AssemblyInfo.cs
+C:\Users\T490\OneDrive\Dokumenty\GitHub\csharp-client-ws\csharp-client\PrivacyIDEA_Client\obj\Debug\net6.0\PrivacyIDEA_Client.csproj.CoreCompileInputs.cache
