@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32819.101
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrivacyIDEA Client", "PrivacyIDEA Client\PrivacyIDEA Client.csproj", "{83C3A3A6-3F9A-4CCA-8B81-1BD59630D774}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{101730FF-44AD-4791-BBB3-FB6D83BD5F65}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrivacyIDEA_Client", "PrivacyIDEA_Client\PrivacyIDEA_Client.csproj", "{537E7310-D23C-43B5-95C9-8F3514772EC9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,14 +13,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{83C3A3A6-3F9A-4CCA-8B81-1BD59630D774}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{83C3A3A6-3F9A-4CCA-8B81-1BD59630D774}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{83C3A3A6-3F9A-4CCA-8B81-1BD59630D774}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{83C3A3A6-3F9A-4CCA-8B81-1BD59630D774}.Release|Any CPU.Build.0 = Release|Any CPU
 		{101730FF-44AD-4791-BBB3-FB6D83BD5F65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{101730FF-44AD-4791-BBB3-FB6D83BD5F65}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{101730FF-44AD-4791-BBB3-FB6D83BD5F65}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{101730FF-44AD-4791-BBB3-FB6D83BD5F65}.Release|Any CPU.Build.0 = Release|Any CPU
+		{537E7310-D23C-43B5-95C9-8F3514772EC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{537E7310-D23C-43B5-95C9-8F3514772EC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{537E7310-D23C-43B5-95C9-8F3514772EC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{537E7310-D23C-43B5-95C9-8F3514772EC9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

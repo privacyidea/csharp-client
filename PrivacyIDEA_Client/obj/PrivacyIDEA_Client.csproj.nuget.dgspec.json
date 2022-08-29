@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\T490\\OneDrive\\Dokumenty\\GitHub\\csharp-client-ws\\csharp-client\\PrivacyIDEA Client\\PrivacyIDEA Client.csproj": {}
+    "C:\\Users\\T490\\OneDrive\\Dokumenty\\GitHub\\csharp-client-ws\\csharp-client\\PrivacyIDEA_Client\\PrivacyIDEA_Client.csproj": {}
   },
   "projects": {
-    "C:\\Users\\T490\\OneDrive\\Dokumenty\\GitHub\\csharp-client-ws\\csharp-client\\PrivacyIDEA Client\\PrivacyIDEA Client.csproj": {
+    "C:\\Users\\T490\\OneDrive\\Dokumenty\\GitHub\\csharp-client-ws\\csharp-client\\PrivacyIDEA_Client\\PrivacyIDEA_Client.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\T490\\OneDrive\\Dokumenty\\GitHub\\csharp-client-ws\\csharp-client\\PrivacyIDEA Client\\PrivacyIDEA Client.csproj",
-        "projectName": "PrivacyIDEA Client",
-        "projectPath": "C:\\Users\\T490\\OneDrive\\Dokumenty\\GitHub\\csharp-client-ws\\csharp-client\\PrivacyIDEA Client\\PrivacyIDEA Client.csproj",
+        "projectUniqueName": "C:\\Users\\T490\\OneDrive\\Dokumenty\\GitHub\\csharp-client-ws\\csharp-client\\PrivacyIDEA_Client\\PrivacyIDEA_Client.csproj",
+        "projectName": "PrivacyIDEA_Client",
+        "projectPath": "C:\\Users\\T490\\OneDrive\\Dokumenty\\GitHub\\csharp-client-ws\\csharp-client\\PrivacyIDEA_Client\\PrivacyIDEA_Client.csproj",
         "packagesPath": "C:\\Users\\T490\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\T490\\OneDrive\\Dokumenty\\GitHub\\csharp-client-ws\\csharp-client\\PrivacyIDEA Client\\obj\\",
+        "outputPath": "C:\\Users\\T490\\OneDrive\\Dokumenty\\GitHub\\csharp-client-ws\\csharp-client\\PrivacyIDEA_Client\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\T490\\AppData\\Roaming\\NuGet\\NuGet.Config",
