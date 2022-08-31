@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace PrivacyIDEA_Client
@@ -18,7 +16,7 @@ namespace PrivacyIDEA_Client
 
         private PIEnrollResponse() { }
 
-        public static PIEnrollResponse FromJSON(string json, PrivacyIDEA privacyIDEA)
+        public static PIEnrollResponse? FromJSON(string json, PrivacyIDEA privacyIDEA)
         {
             if (string.IsNullOrEmpty(json))
             {
@@ -29,39 +27,39 @@ namespace PrivacyIDEA_Client
                 return null;
             }
 
-            PIEnrollResponse ret = new PIEnrollResponse();
-            ret.Raw = json;
+            PIEnrollResponse ret = new()
+            {
+                Raw = json
+            };
+
             try
             {
                 JObject jobj = JObject.Parse(json);
-                JToken result = jobj["result"];
-                if (result != null)
-                {
-                    ret.Status = (bool)result["status"];
 
-                    JToken jVal = result["value"];
+                if (jobj["result"] is JToken result)
+                {
+                    ret.Status = (bool)(result["status"] ?? false);
+
+                    JToken? jVal = result["value"];
                     if (jVal != null)
                     {
                         ret.Value = (bool)jVal;
                     }
 
-                    JToken error = result["error"];
-                    if (error != null)
+                    if (result["error"] is JToken error)
                     {
                         ret.ErrorCode = (int)error["code"];
                         ret.ErrorMessage = (string)error["message"];
                     }
                 }
 
-                JToken detail = jobj["detail"];
-                if (detail != null && detail.Type != JTokenType.Null)
+                if (jobj["detail"] is JToken detail && detail.Type != JTokenType.Null)
                 {
                     
                     // ret.Type = (string)detail["type"];
                     ret.Serial = (string)detail["serial"];
 
-                    JToken googleTotp = detail["googleurl"];
-                    if (googleTotp != null && googleTotp.Type != JTokenType.Null)
+                    if (detail["googleurl"] is JToken googleTotp && googleTotp.Type != JTokenType.Null)
                     {
                         ret.TotpUrl = (string)googleTotp["value"];
                         ret.Base64TotpImage = (string)googleTotp["img"];

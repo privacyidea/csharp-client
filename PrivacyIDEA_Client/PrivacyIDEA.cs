@@ -1,11 +1,6 @@
-﻿using System;
-using System.Diagnostics;
-using System.Collections.Generic;
-using System.Net;
-using System.Net.Http;
+﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -44,15 +39,17 @@ namespace PrivacyIDEA_Client
         private HttpClientHandler httpClientHandler;
         private HttpClient httpClient;
         private bool disposedValue;
-        private string serviceuser, servicepass, servicerealm, useragent;
-        private bool logServerResponse = true;
-        public PILog Logger { get; set; } = null;
+        private readonly string useragent;
+        private string serviceuser, servicepass;
+        private string? servicerealm;
+        private readonly bool logServerResponse = true;
+        public PILog? Logger { get; set; } = null;
 
         // The webauthn parameters should not be url encoded because they already have the correct format.
-        private static List<String> exludeFromURIEscape = new List<string>(new string[]
+        private static readonly List<String> exludeFromURIEscape = new(new string[]
            { "credentialid", "clientdata", "signaturedata", "authenticatordata", "userhandle", "assertionclientextensions" });
 
-        private static List<String> logExcludedEndpoints = new List<string>(new string[]
+        private static readonly List<String> logExcludedEndpoints = new(new string[]
            { "/auth", "/validate/polltransaction" });
 
         public PrivacyIDEA(string url, string useragent, bool sslVerify = true)
@@ -77,7 +74,7 @@ namespace PrivacyIDEA_Client
         /// <param name="domain">optional domain which can be mapped to a privacyIDEA realm</param>
         /// <param name="headers">optional headers which can be forwarded to the privacyIDEA server</param>
         /// <returns>PIResponse object or null on error</returns>
-        public PIResponse TriggerChallenges(string username, string domain = null, List<KeyValuePair<string, string>> headers = null)
+        public PIResponse? TriggerChallenges(string username, string? domain = null, List<KeyValuePair<string, string>>? headers = null)
         {
             if (!GetAuthToken())
             {
@@ -92,7 +89,7 @@ namespace PrivacyIDEA_Client
             AddRealmForDomain(domain, parameters);
 
             string response = SendRequest("/validate/triggerchallenge", parameters, headers);
-            PIResponse ret = PIResponse.FromJSON(response, this);
+            PIResponse? ret = PIResponse.FromJSON(response, this);
 
             return ret;
         }
@@ -118,17 +115,14 @@ namespace PrivacyIDEA_Client
                     Error("/validate/polltransaction did not respond!");
                     return false;
                 }
-                bool ret = false;
-                try
-                {
-                    dynamic root = JsonConvert.DeserializeObject(response);
-                    ret = (bool)root.result.value;
-                }
-                catch (Exception)
-                {
-                    Error("/validate/polltransaction response has wrong format or does not contain 'value'.\n" + response);
-                }
 
+                bool ret = false;            
+                JObject root = JObject.Parse(response);
+
+                if (root["result"] is JToken result)
+                {
+                    ret = (bool)(result["value"] ?? false);
+                }
                 return ret;
             }
             Error("PollTransaction called with empty transaction id!");
@@ -141,7 +135,7 @@ namespace PrivacyIDEA_Client
         /// <param name="user">username</param>
         /// <param name="domain">optional domain which can be mapped to a privacyIDEA realm</param>
         /// <returns>true if token exists. false if not or error</returns>
-        public bool UserHasToken(string user, string domain = null)
+        public bool UserHasToken(string user, string? domain = null)
         {
             if (!GetAuthToken())
             {
@@ -160,15 +154,13 @@ namespace PrivacyIDEA_Client
                 Error("/token/ did not respond!");
                 return false;
             }
+
             bool ret = false;
-            try
+            JObject root = JObject.Parse(response);
+
+            if (root["result"] is JToken result)
             {
-                dynamic root = JsonConvert.DeserializeObject(response);
-                ret = root.result.value.count != 0;
-            }
-            catch (Exception)
-            {
-                Error("/token/ response has wrong format or does not contain 'result.value.count'.\n" + response);
+                ret = (bool)(result["value"] ?? false);
             }
             return ret;
         }
@@ -179,7 +171,7 @@ namespace PrivacyIDEA_Client
         /// <param name="user">username</param>
         /// <param name="domain">optional domain which can be mapped to a privacyIDEA realm</param>
         /// <returns>PIEnrollResponse object or null on error</returns>
-        public PIEnrollResponse TokenInit(string user, string domain = null)
+        public PIEnrollResponse TokenInit(string user, string? domain = null)
         {
             var parameters = new Dictionary<string, string>
             {
@@ -204,7 +196,7 @@ namespace PrivacyIDEA_Client
         /// <param name="domain">optional domain which can be mapped to a privacyIDEA realm</param>
         /// <param name="headers">optional headers which can be forwarded to the privacyIDEA server</param>
         /// <returns>PIResponse object or null on error</returns>
-        public PIResponse ValidateCheck(string user, string otp, string transactionid = null, string domain = null, List<KeyValuePair<string, string>> headers = null)
+        public PIResponse ValidateCheck(string user, string otp, string? transactionid = null, string? domain = null, List<KeyValuePair<string, string>>? headers = null)
         {
             var parameters = new Dictionary<string, string>
             {
@@ -234,7 +226,7 @@ namespace PrivacyIDEA_Client
         /// <param name="domain">optional domain which can be mapped to a privacyIDEA realm</param>
         /// <param name="headers">optional headers which can be forwarded to the privacyIDEA server</param>
         /// <returns>PIResponse object or null on error</returns>
-        public PIResponse ValidateCheckWebAuthn(string user, string transactionid, string webAuthnSignResponse, string origin, string domain = null, List<KeyValuePair<string, string>> headers = null)
+        public PIResponse? ValidateCheckWebAuthn(string user, string transactionid, string webAuthnSignResponse, string origin, string? domain = null, List<KeyValuePair<string, string>>? headers = null)
         {
             if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(transactionid) || string.IsNullOrEmpty(webAuthnSignResponse) || string.IsNullOrEmpty(origin))
             {
@@ -255,10 +247,15 @@ namespace PrivacyIDEA_Client
                 return null;
             }
 
-            string credentialid = (string)root["credentialid"];
-            string clientdata = (string)root["clientdata"];
-            string signaturedata = (string)root["signaturedata"];
-            string authenticatordata = (string)root["authenticatordata"];
+            if (root["credentialid"] is null || root["clientdata"] is null || root["signaturedata"] is null || root["authenticatordata"] is null)
+            {
+                Log("");
+                return null;
+            }
+            string credentialid = (string)root["credentialid"]!;
+            string clientdata = (string)root["clientdata"]!;
+            string signaturedata = (string)root["signaturedata"]!;
+            string authenticatordata = (string)root["authenticatordata"]!;
 
             var parameters = new Dictionary<string, string>
             {
@@ -272,13 +269,12 @@ namespace PrivacyIDEA_Client
             };
 
             // Optionally add UserHandle and AssertionClientExtensions
-            string userhandle = (string)root["userhandle"];
-            if (!string.IsNullOrEmpty(userhandle))
+            string? uh = (string?)root["userhandle"];
+            if (!string.IsNullOrEmpty(uh))
             {
-                parameters.Add("userhandle", userhandle);
+                parameters.Add("userhandle", uh);
             }
-
-            string ace = (string)root["assertionclientextensions"];
+            string? ace = (string?)root["assertionclientextensions"];
             if (!string.IsNullOrEmpty(ace))
             {
                 parameters.Add("assertionclientextensions", ace);
@@ -287,6 +283,7 @@ namespace PrivacyIDEA_Client
             AddRealmForDomain(domain, parameters);
 
             // The origin has to be set in the header for WebAuthn authentication
+            headers ??= new List<KeyValuePair<string, string>>();
             headers.Add(new KeyValuePair<string, string>("Origin", origin));
 
             string response = SendRequest("/validate/check", parameters, headers);
@@ -306,11 +303,11 @@ namespace PrivacyIDEA_Client
                 return false;
             }
 
-            var map = new Dictionary<string, string>
-            {
-                { "username", serviceuser },
-                { "password", servicepass }
-            };
+                var map = new Dictionary<string, string>
+                    {
+                        { "username", serviceuser },
+                        { "password", servicepass }
+                    };
 
             if (!string.IsNullOrEmpty(servicerealm))
             {
@@ -326,7 +323,8 @@ namespace PrivacyIDEA_Client
             }
 
             string token = "";
-            try
+
+      /*      try
             {
                 dynamic root = JsonConvert.DeserializeObject(response);
                 token = root.result.value.token;
@@ -334,6 +332,17 @@ namespace PrivacyIDEA_Client
             catch (Exception)
             {
                 Error("/auth response did not have the correct format or did not contain a token.\n" + response);
+            }*/
+            JObject root = JObject.Parse(response);
+            if (root["result"] is JToken result)
+            {
+                if (result["value"] is JToken tkn)
+                {
+                    if (tkn["token"] is not null)
+                    {
+                        token = (string)tkn["token"]!; // todo how the response looks like
+                    }
+                }
             }
 
             if (!string.IsNullOrEmpty(token))
@@ -354,13 +363,13 @@ namespace PrivacyIDEA_Client
             }
         }
 
-        private string SendRequest(string endpoint, Dictionary<string, string> parameters, List<KeyValuePair<string, string>> headers = null, string method = "POST")
+        private string SendRequest(string endpoint, Dictionary<string, string> parameters, List<KeyValuePair<string, string>>? headers = null, string method = "POST")
         {
             Log("Sending [" + string.Join(" , ", parameters) + "] to [" + endpoint + "] with method [" + method + "]");
 
             var stringContent = DictToEncodedStringContent(parameters);
 
-            HttpRequestMessage request = new HttpRequestMessage();
+            HttpRequestMessage request = new();
             if (method == "POST")
             {
                 request.Method = HttpMethod.Post;
@@ -416,7 +425,7 @@ namespace PrivacyIDEA_Client
         /// </summary>
         /// <param name="domain"></param>
         /// <param name="parameters"></param>
-        private void AddRealmForDomain(string domain, Dictionary<string, string> parameters)
+        private void AddRealmForDomain(string? domain, Dictionary<string, string> parameters)
         {
             if (!string.IsNullOrEmpty(domain))
             {
@@ -453,15 +462,15 @@ namespace PrivacyIDEA_Client
             }            
         }
 
-        internal StringContent DictToEncodedStringContent(Dictionary<string, string> dict)
+        internal static StringContent DictToEncodedStringContent(Dictionary<string, string> dict)
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
 
             foreach (var element in dict)
             {
-                sb.Append(element.Key).Append("=");
+                sb.Append(element.Key).Append('=');
                 sb.Append((exludeFromURIEscape.Contains(element.Key)) ? element.Value : Uri.EscapeDataString(element.Value));
-                sb.Append("&");
+                sb.Append('&');
             }
             // Remove tailing &
             if (sb.Length > 0)

@@ -1,8 +1,5 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace PrivacyIDEA_Client
 {
@@ -10,10 +7,10 @@ namespace PrivacyIDEA_Client
     {
         public string TransactionID { get; set; } = "";
         public string Message { get; set; } = "";
-        public string ErrorMessage { get; set; } = "";
+        public string? ErrorMessage { get; set; } = "";
         public string Type { get; set; } = "";
         public string Serial { get; set; } = "";
-        public int ErrorCode { get; set; } = 0;
+        public int? ErrorCode { get; set; } = 0;
         public bool Status { get; set; } = false;
         public bool Value { get; set; } = false;
 
@@ -46,19 +43,21 @@ namespace PrivacyIDEA_Client
             else
             {
                 // Extract allowCredentials from every WebAuthn sign request and store in JArray list.
-                List<JArray> extracted = new List<JArray>();
+                List<JArray> extracted = new();
                 foreach (string signRequest in webAuthnSignRequests)
                 {
                     JObject jobj = JObject.Parse(signRequest);
-                    JArray jarray = jobj["allowCredentials"] as JArray;
 
-                    extracted.Add(jarray);
+                    if (jobj["allowCredentials"] is JArray jarray)
+                    {
+                        extracted.Add(jarray);
+                    }
                 }
                 // Get WebAuthn sign request as JSON object
                 JObject webAuthnSignRequest = JObject.Parse(webAuthnSignRequests[0]);
 
                 // Set extracted allowCredentials section from every triggered WebAuthn device into one JSON array.
-                JArray allowCredentials = new JArray();
+                JArray allowCredentials = new();
 
                 foreach (var x in extracted)
                 {
@@ -78,12 +77,13 @@ namespace PrivacyIDEA_Client
 
         public List<string> WebAuthnSignRequests()
         {
-            List<string> ret = new List<string>();
+            List<string> ret = new();
             foreach (PIChallenge challenge in Challenges)
             {
                 if (challenge.Type == "webauthn")
                 {
-                    string temp = (challenge as PIWebAuthnSignRequest).WebAuthnSignRequest;
+                    //        string temp = (challenge as PIWebAuthnSignRequest).WebAuthnSignRequest; todo check if it is good
+                    string temp = ((PIWebAuthnSignRequest)challenge).WebAuthnSignRequest;
                     ret.Add(temp);
                 }
             }
@@ -91,7 +91,7 @@ namespace PrivacyIDEA_Client
             return ret;
         }
 
-        public static PIResponse FromJSON(string json, PrivacyIDEA privacyIDEA)
+        public static PIResponse? FromJSON(string json, PrivacyIDEA privacyIDEA)
         {
             if (string.IsNullOrEmpty(json))
             {
@@ -102,53 +102,76 @@ namespace PrivacyIDEA_Client
                 return null;
             }
 
-            PIResponse ret = new PIResponse();
-            ret.Raw = json;
+            PIResponse ret = new()
+            {
+                Raw = json
+            };
+
             try
             {
                 JObject jobj = JObject.Parse(json);
-                JToken result = jobj["result"];
-                if (result != null)
+                if (jobj["result"] is JToken result)
                 {
-                    ret.Status = (bool)result["status"];
-                    JToken jVal = result["value"];
+                    ret.Status = (bool)(result["status"] ?? false);
+                    JToken? jVal = result["value"];
                     if (jVal != null)
                     {
                         ret.Value = (bool)jVal;
                     }
 
-                    JToken error = result["error"];
+                    JToken? error = result["error"];
                     if (error != null)
                     {
-                        ret.ErrorCode = (int)error["code"];
-                        ret.ErrorMessage = (string)error["message"];
+                        ret.ErrorCode = (int?)error["code"];
+                        ret.ErrorMessage = (string?)error["message"];
                     }
                 }
 
-                JToken detail = jobj["detail"];
-                if (detail != null && detail.Type != JTokenType.Null)
+                if (jobj["detail"] is JToken detail && detail.Type != JTokenType.Null)
                 {
-                    ret.TransactionID = (string)detail["transaction_id"];
-                    ret.Message = (string)detail["message"];
-                    ret.Type = (string)detail["type"];
-                    ret.Serial = (string)detail["serial"];
+                    if (detail["transaction_id"] is not null)
+                    {
+                        ret.TransactionID = (string)detail["transaction_id"]!;
+                    }
+                    if (detail["message"] is not null)
+                    {
+                        ret.Message = (string)detail["message"]!;
+                    }
+                    if (detail["type"] is not null)
+                    {
+                        ret.Type = (string)detail["type"]!;
+                    }
+                    if (detail["serial"] is not null)
+                    {
+                        ret.Serial = (string)detail["serial"]!;
+                    }
 
-                    JArray multiChallenge = detail["multi_challenge"] as JArray;
-                    if (multiChallenge != null)
+                    if (detail["multi_challenge"] is JArray multiChallenge)
                     {
                         foreach (JToken element in multiChallenge.Children())
                         {
-                            string message = (string)element["message"];
-                            string transactionid = (string)element["transaction_id"];
-                            string type = (string)element["type"];
-                            string serial = (string)element["serial"];
+                            if (element["message"] is not null)
+                            {
+                                string message = (string)element["message"]!;
+                            }
+                            if (element["transaction_id"] is not null)
+                            {
+                                string transactionid = (string)element["transaction_id"]!;
+                            }
+                            if (element["type"] is not null)
+                            {
+                                string type = (string)element["type"]!;
+                            }
+                            if (element["serial"] is not null)
+                            {
+                                string serial = (string)element["serial"]!;
+                            }
 
                             if (type == "webauthn")
                             {
-                                PIWebAuthnSignRequest tmp = new PIWebAuthnSignRequest();
-                                JToken attr = element["attributes"];
+                                PIWebAuthnSignRequest tmp = new();
 
-                                if (attr.Type != JTokenType.Null)
+                                if (element["attributes"] is JToken attr && attr.Type != JTokenType.Null)
                                 {
                                     var signRequest = attr["webAuthnSignRequest"];
                                     if (signRequest != null)
