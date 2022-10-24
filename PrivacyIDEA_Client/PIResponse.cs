@@ -122,14 +122,14 @@ namespace PrivacyIDEA_Client
                     JToken? error = result["error"];
                     if (error != null)
                     {
-                        ret.ErrorCode = (int?)error["code"];
-                        ret.ErrorMessage = (string?)error["message"];
+                        ret.ErrorCode = (int)(error["code"] ?? "");
+                        ret.ErrorMessage = (string?)(error["message"] ?? "");
                     }
                 }
 
                 if (jobj["detail"] is JToken detail && detail.Type != JTokenType.Null)
                 {
-                    if (detail["transaction_id"] is not null)
+                    if (detail["transaction_id"] is not null) // todo if null ignore or error?
                     {
                         ret.TransactionID = (string)detail["transaction_id"]!;
                     }
@@ -150,22 +150,10 @@ namespace PrivacyIDEA_Client
                     {
                         foreach (JToken element in multiChallenge.Children())
                         {
-                            if (element["message"] is not null)
-                            {
-                                string message = (string)element["message"]!;
-                            }
-                            if (element["transaction_id"] is not null)
-                            {
-                                string transactionid = (string)element["transaction_id"]!;
-                            }
-                            if (element["type"] is not null)
-                            {
-                                string type = (string)element["type"]!;
-                            }
-                            if (element["serial"] is not null)
-                            {
-                                string serial = (string)element["serial"]!;
-                            }
+                            string message = (string)element["message"]; // todo if null ignore or error?
+                            string transactionid = (string)element["transaction_id"];
+                            string type = (string)element["type"];
+                            string serial = (string)element["serial"];
 
                             if (type == "webauthn")
                             {
@@ -181,19 +169,21 @@ namespace PrivacyIDEA_Client
                                     }
                                 }
 
-                                tmp.Message = message;
-                                tmp.Serial = serial;
-                                tmp.TransactionID = transactionid;
-                                tmp.Type = type;
+                                    tmp.Message = message;
+                                    tmp.Serial = serial;
+                                    tmp.TransactionID = transactionid;
+                                    tmp.Type = type;
                                 ret.Challenges.Add(tmp);
                             }
                             else
                             {
-                                PIChallenge tmp = new PIChallenge();
-                                tmp.Message = message;
-                                tmp.Serial = serial;
-                                tmp.TransactionID = transactionid;
-                                tmp.Type = type;
+                                PIChallenge tmp = new()
+                                {
+                                    Message = message,
+                                    Serial = serial,
+                                    TransactionID = transactionid,
+                                    Type = type
+                                };
                                 ret.Challenges.Add(tmp);
                             }
                         }

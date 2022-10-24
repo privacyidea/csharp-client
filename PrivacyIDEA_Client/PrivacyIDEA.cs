@@ -340,7 +340,7 @@ namespace PrivacyIDEA_Client
                 {
                     if (tkn["token"] is not null)
                     {
-                        token = (string)tkn["token"]!; // todo how the response looks like
+                        token = (string)tkn["token"]!; // todo how the response looks like? should'nt it be one floor above?
                     }
                 }
             }

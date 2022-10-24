@@ -6,8 +6,8 @@ namespace PrivacyIDEA_Client
     public class PIEnrollResponse
     {
         public string Raw { get; set; } = "";
-        public string ErrorMessage { get; set; } = "";
-        public int ErrorCode { get; set; } = 0;
+        public string? ErrorMessage { get; set; } = "";
+        public int? ErrorCode { get; set; } = 0;
         public bool Status { get; set; } = false;
         public bool Value { get; set; } = false;
         public string Serial { get; set; } = "";
@@ -48,8 +48,8 @@ namespace PrivacyIDEA_Client
 
                     if (result["error"] is JToken error)
                     {
-                        ret.ErrorCode = (int)error["code"];
-                        ret.ErrorMessage = (string)error["message"];
+                        ret.ErrorCode = (int)(error["code"] ?? "");
+                        ret.ErrorMessage = (string?)(error["message"] ?? "");
                     }
                 }
 
