@@ -12,37 +12,38 @@ namespace PrivacyIDEA_Client
         public string Realm { get; set; } = "";
         public Dictionary<string, string> RealmMap { get; set; } = new Dictionary<string, string>();
 
-        private bool _sslVerify = true;
+        private bool _SSLVerify = true;
         public bool SSLVerify
         {
             get
             {
-                return _sslVerify;
+                return _SSLVerify;
             }
             set
             {
-                if (SSLVerify != _sslVerify)
+                if (SSLVerify != _SSLVerify)
                 {
-                    httpClientHandler = new HttpClientHandler();
+                    _HttpClientHandler = new HttpClientHandler();
                     if (!SSLVerify)
                     {
-                        httpClientHandler.ClientCertificateOptions = ClientCertificateOption.Manual;
-                        httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+                        _HttpClientHandler.ClientCertificateOptions = ClientCertificateOption.Manual;
+                        _HttpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
                     }
-                    httpClient = new HttpClient(httpClientHandler);
-                    httpClient.DefaultRequestHeaders.Add("User-Agent", useragent);
-                    _sslVerify = SSLVerify;
+                    _HttpClient = new HttpClient(_HttpClientHandler);
+                    _HttpClient.DefaultRequestHeaders.Add("User-Agent", _Useragent);
+                    _SSLVerify = SSLVerify;
                 }
             }
         }
 
-        private HttpClientHandler httpClientHandler;
-        private HttpClient httpClient;
-        private bool disposedValue;
-        private readonly string useragent;
-        private string serviceuser, servicepass;
-        private string? servicerealm;
-        private readonly bool logServerResponse = true;
+        private HttpClientHandler _HttpClientHandler;
+        private HttpClient _HttpClient;
+        private bool _DisposedValue;
+        private readonly string _Useragent;
+        private string? _Serviceuser;
+        private string? _Servicepass;
+        private string? _Servicerealm;
+        private readonly bool _LogServerResponse = true;
         public PILog? Logger { get; set; } = null;
 
         // The webauthn parameters should not be url encoded because they already have the correct format.
@@ -55,16 +56,16 @@ namespace PrivacyIDEA_Client
         public PrivacyIDEA(string url, string useragent, bool sslVerify = true)
         {
             this.Url = url;
-            this.useragent = useragent;
+            this._Useragent = useragent;
 
-            httpClientHandler = new HttpClientHandler();
+            _HttpClientHandler = new HttpClientHandler();
             if (!sslVerify)
             {
-                httpClientHandler.ClientCertificateOptions = ClientCertificateOption.Manual;
-                httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+                _HttpClientHandler.ClientCertificateOptions = ClientCertificateOption.Manual;
+                _HttpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             }
-            httpClient = new HttpClient(httpClientHandler);
-            httpClient.DefaultRequestHeaders.Add("User-Agent", useragent);
+            _HttpClient = new HttpClient(_HttpClientHandler);
+            _HttpClient.DefaultRequestHeaders.Add("User-Agent", useragent);
         }
 
         /// <summary>
@@ -74,7 +75,7 @@ namespace PrivacyIDEA_Client
         /// <param name="domain">optional domain which can be mapped to a privacyIDEA realm</param>
         /// <param name="headers">optional headers which can be forwarded to the privacyIDEA server</param>
         /// <returns>PIResponse object or null on error</returns>
-        public PIResponse? TriggerChallenges(string username, string? domain = null, List<KeyValuePair<string, string>>? headers = null)
+        public async Task<PIResponse?> TriggerChallenges(string username, string? domain = null, List<KeyValuePair<string, string>>? headers = null)
         {
             if (!GetAuthToken())
             {
@@ -88,7 +89,7 @@ namespace PrivacyIDEA_Client
 
             AddRealmForDomain(domain, parameters);
 
-            string response = SendRequest("/validate/triggerchallenge", parameters, headers);
+            string response = await SendRequest("/validate/triggerchallenge", parameters, headers);
             PIResponse? ret = PIResponse.FromJSON(response, this);
 
             return ret;
@@ -305,13 +306,13 @@ namespace PrivacyIDEA_Client
 
                 var map = new Dictionary<string, string>
                     {
-                        { "username", serviceuser },
-                        { "password", servicepass }
+                        { "username", _Serviceuser },
+                        { "password", _Servicepass }
                     };
 
-            if (!string.IsNullOrEmpty(servicerealm))
+            if (!string.IsNullOrEmpty(_Servicerealm))
             {
-                map.Add("realm", servicerealm);
+                map.Add("realm", _Servicerealm);
             }
 
             string response = SendRequest("/auth", map);
@@ -347,7 +348,7 @@ namespace PrivacyIDEA_Client
 
             if (!string.IsNullOrEmpty(token))
             {
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
+                _HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
                 return true;
             }
             return false;
@@ -355,46 +356,47 @@ namespace PrivacyIDEA_Client
 
         public void SetServiceAccount(string user, string pass, string realm = "")
         {
-            serviceuser = user;
-            servicepass = pass;
+            _Serviceuser = user;
+            _Servicepass = pass;
             if (!string.IsNullOrEmpty(realm))
             {
-                servicerealm = realm;
+                _Servicerealm = realm;
             }
         }
 
-        private string SendRequest(string endpoint, Dictionary<string, string> parameters, List<KeyValuePair<string, string>>? headers = null, string method = "POST")
+        private Task<string> SendRequest(string endpoint, Dictionary<string, string> parameters, CancellationToken cancellationToken,
+            List<KeyValuePair<string, string>>? headers = null, string method = "POST")
         {
-            Log("Sending [" + string.Join(" , ", parameters) + "] to [" + endpoint + "] with method [" + method + "]");
+            Log("Sending [" + string.Join(" , ", parameters) + "] to [" + Url + endpoint + "] with method [" + method + "]");
 
-            var stringContent = DictToEncodedStringContent(parameters);
+            StringContent stringContent = DictToEncodedStringContent(parameters);
 
             HttpRequestMessage request = new();
             if (method == "POST")
             {
                 request.Method = HttpMethod.Post;
-                request.RequestUri = new Uri(this.Url + endpoint);
+                request.RequestUri = new Uri(Url + endpoint);
                 request.Content = stringContent;
             }
             else
             {
                 string s = stringContent.ReadAsStringAsync().GetAwaiter().GetResult();
                 request.Method = HttpMethod.Get;
-                request.RequestUri = new Uri(this.Url + endpoint + "?" + s);
+                request.RequestUri = new Uri(Url + endpoint + "?" + s);
             }
 
             if (headers != null && headers.Count > 0)
             {
-                foreach (var element in headers)
+                foreach (KeyValuePair<string, string> element in headers)
                 {
                     request.Headers.Add(element.Key, element.Value);
-                    Log("Forwarding headers: " + element.Key + " = " + element.Value);
                 }
             }
 
-            Task<HttpResponseMessage> responseTask = httpClient.SendAsync(request);
+            var awaiter = _HttpClient.SendAsync(request, cancellationToken).GetAwaiter();
 
-            var responseMessage = responseTask.GetAwaiter().GetResult();
+            HttpResponseMessage responseMessage = awaiter.GetResult();
+
             if (responseMessage.StatusCode != HttpStatusCode.OK)
             {
                 Error("The request to " + endpoint + " returned HttpStatusCode " + responseMessage.StatusCode);
@@ -411,12 +413,12 @@ namespace PrivacyIDEA_Client
                 Error(e.Message);
             }
 
-            if (logServerResponse && !string.IsNullOrEmpty(ret) && !logExcludedEndpoints.Contains(endpoint))
+            if (_LogServerResponse && !string.IsNullOrEmpty(ret) && !logExcludedEndpoints.Contains(endpoint))
             {
                 Log(endpoint + " response:\n" + JToken.Parse(ret).ToString(Formatting.Indented));
             }
 
-            return ret;
+            return Task.FromResult(ret);
         }
 
         /// <summary>
@@ -485,7 +487,7 @@ namespace PrivacyIDEA_Client
 
         internal bool ServiceAccountAvailable()
         {
-            return !string.IsNullOrEmpty(serviceuser) && !string.IsNullOrEmpty(servicepass);
+            return !string.IsNullOrEmpty(_Serviceuser) && !string.IsNullOrEmpty(_Servicepass);
         }
 
         internal void Log(string message)
@@ -514,16 +516,16 @@ namespace PrivacyIDEA_Client
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_DisposedValue)
             {
                 if (disposing)
                 {
                     // Managed
-                    httpClient.Dispose();
-                    httpClientHandler.Dispose();
+                    _HttpClient.Dispose();
+                    _HttpClientHandler.Dispose();
                 }
                 // Unmanaged
-                disposedValue = true;
+                _DisposedValue = true;
             }
         }
 
