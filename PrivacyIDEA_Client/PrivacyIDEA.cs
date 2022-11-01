@@ -100,17 +100,18 @@ namespace PrivacyIDEA_Client
         /// Check if the challenge for the given transaction id has been answered yet. This is done using the /validate/polltransaction endpoint.
         /// </summary>
         /// <param name="transactionid"></param>
+        /// <param name="cancellationToken">optional</param>
         /// <returns>true if challenge was answered. false if not or error</returns>
-        public bool PollTransaction(string transactionid)
+        public async Task<bool> PollTransaction(string transactionid, CancellationToken cancellationToken = default)
         {
             if (!string.IsNullOrEmpty(transactionid))
             {
-                var dict = new Dictionary<string, string>
+                var parameters = new Dictionary<string, string>
                 {
                     { "transaction_id", transactionid }
                 };
 
-                string response = await SendRequest("/validate/polltransaction", dict, new List<KeyValuePair<string, string>>(), "GET");
+                string response = await SendRequest("/validate/polltransaction", parameters, cancellationToken, new List<KeyValuePair<string, string>>(), "GET");
 
                 if (string.IsNullOrEmpty(response))
                 {
@@ -136,8 +137,10 @@ namespace PrivacyIDEA_Client
         /// </summary>
         /// <param name="user">username</param>
         /// <param name="domain">optional domain which can be mapped to a privacyIDEA realm</param>
+        /// <param name="cancellationToken">optional</param>
+
         /// <returns>true if token exists. false if not or error</returns>
-        public bool UserHasToken(string user, string? domain = null)
+        public async Task<bool> UserHasToken(string user, string? domain = null, CancellationToken cancellationToken = default)
         {
             if (!GetAuthToken())
             {
@@ -150,7 +153,7 @@ namespace PrivacyIDEA_Client
             };
             AddRealmForDomain(domain, parameters);
 
-            string response = SendRequest("/token/", parameters, new List<KeyValuePair<string, string>>(), "GET");
+            string response = await SendRequest("/token/", parameters, new List<KeyValuePair<string, string>>(), "GET");
             if (string.IsNullOrEmpty(response))
             {
                 Error("/token/ did not respond!");
