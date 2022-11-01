@@ -138,7 +138,6 @@ namespace PrivacyIDEA_Client
         /// <param name="user">username</param>
         /// <param name="domain">optional domain which can be mapped to a privacyIDEA realm</param>
         /// <param name="cancellationToken">optional</param>
-
         /// <returns>true if token exists. false if not or error</returns>
         public async Task<bool> UserHasToken(string user, string? domain = null, CancellationToken cancellationToken = default)
         {
@@ -153,7 +152,7 @@ namespace PrivacyIDEA_Client
             };
             AddRealmForDomain(domain, parameters);
 
-            string response = await SendRequest("/token/", parameters, new List<KeyValuePair<string, string>>(), "GET");
+            string response = await SendRequest("/token/", parameters, cancellationToken, new List<KeyValuePair<string, string>>(), "GET");
             if (string.IsNullOrEmpty(response))
             {
                 Error("/token/ did not respond!");
@@ -175,8 +174,9 @@ namespace PrivacyIDEA_Client
         /// </summary>
         /// <param name="user">username</param>
         /// <param name="domain">optional domain which can be mapped to a privacyIDEA realm</param>
+        /// <param name="cancellationToken">optional</param>
         /// <returns>PIEnrollResponse object or null on error</returns>
-        public PIEnrollResponse TokenInit(string user, string? domain = null)
+        public async Task<PIEnrollResponse?> TokenInit(string user, string? domain = null, CancellationToken cancellationToken = default)
         {
             var parameters = new Dictionary<string, string>
             {
@@ -186,7 +186,7 @@ namespace PrivacyIDEA_Client
             };
             AddRealmForDomain(domain, parameters);
 
-            string response = SendRequest("/token/init", parameters, new List<KeyValuePair<string, string>>());
+            string response = await SendRequest("/token/init", parameters, cancellationToken, new List<KeyValuePair<string, string>>());
             return PIEnrollResponse.FromJSON(response, this);
         }
 
