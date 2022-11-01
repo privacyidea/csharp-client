@@ -201,7 +201,7 @@ namespace PrivacyIDEA_Client
         /// <param name="domain">optional domain which can be mapped to a privacyIDEA realm</param>
         /// <param name="headers">optional headers which can be forwarded to the privacyIDEA server</param>
         /// <returns>PIResponse object or null on error</returns>
-        public PIResponse ValidateCheck(string user, string otp, string? transactionid = null, string? domain = null, List<KeyValuePair<string, string>>? headers = null)
+        public async Task<PIResponse?> ValidateCheck(string user, string otp, string? transactionid = null, string? domain = null, List<KeyValuePair<string, string>>? headers = null, CancellationToken cancellationToken = default)
         {
             var parameters = new Dictionary<string, string>
             {
@@ -216,7 +216,7 @@ namespace PrivacyIDEA_Client
 
             AddRealmForDomain(domain, parameters);
 
-            string response = SendRequest("/validate/check", parameters, headers);
+            string response = await SendRequest("/validate/check", parameters, cancellationToken, headers);
             return PIResponse.FromJSON(response, this);
         }
 
