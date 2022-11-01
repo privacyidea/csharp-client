@@ -74,8 +74,9 @@ namespace PrivacyIDEA_Client
         /// <param name="username">username to trigger challenges for</param>
         /// <param name="domain">optional domain which can be mapped to a privacyIDEA realm</param>
         /// <param name="headers">optional headers which can be forwarded to the privacyIDEA server</param>
+        /// <param name="cancellationToken">optional</param>
         /// <returns>PIResponse object or null on error</returns>
-        public async Task<PIResponse?> TriggerChallenges(string username, string? domain = null, List<KeyValuePair<string, string>>? headers = null)
+        public async Task<PIResponse?> TriggerChallenges(string username, string? domain = null, List<KeyValuePair<string, string>>? headers = null, CancellationToken cancellationToken = default)
         {
             if (!GetAuthToken())
             {
@@ -89,7 +90,7 @@ namespace PrivacyIDEA_Client
 
             AddRealmForDomain(domain, parameters);
 
-            string response = await SendRequest("/validate/triggerchallenge", parameters, headers);
+            string response = await SendRequest("/validate/triggerchallenge", parameters, cancellationToken, headers);
             PIResponse? ret = PIResponse.FromJSON(response, this);
 
             return ret;
@@ -104,12 +105,12 @@ namespace PrivacyIDEA_Client
         {
             if (!string.IsNullOrEmpty(transactionid))
             {
-                var map = new Dictionary<string, string>
+                var dict = new Dictionary<string, string>
                 {
                     { "transaction_id", transactionid }
                 };
 
-                string response = SendRequest("/validate/polltransaction", map, new List<KeyValuePair<string, string>>(), "GET");
+                string response = await SendRequest("/validate/polltransaction", dict, new List<KeyValuePair<string, string>>(), "GET");
 
                 if (string.IsNullOrEmpty(response))
                 {
