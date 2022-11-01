@@ -200,6 +200,7 @@ namespace PrivacyIDEA_Client
         /// <param name="transactionid">optional transaction id to refer to a challenge</param>
         /// <param name="domain">optional domain which can be mapped to a privacyIDEA realm</param>
         /// <param name="headers">optional headers which can be forwarded to the privacyIDEA server</param>
+        /// <param name="cancellationToken">optional</param>
         /// <returns>PIResponse object or null on error</returns>
         public async Task<PIResponse?> ValidateCheck(string user, string otp, string? transactionid = null, string? domain = null, List<KeyValuePair<string, string>>? headers = null, CancellationToken cancellationToken = default)
         {
@@ -230,8 +231,9 @@ namespace PrivacyIDEA_Client
         /// <param name="origin">origin also returned by the browser</param>
         /// <param name="domain">optional domain which can be mapped to a privacyIDEA realm</param>
         /// <param name="headers">optional headers which can be forwarded to the privacyIDEA server</param>
+        /// <param name="cancellationToken">optional</param>
         /// <returns>PIResponse object or null on error</returns>
-        public PIResponse? ValidateCheckWebAuthn(string user, string transactionid, string webAuthnSignResponse, string origin, string? domain = null, List<KeyValuePair<string, string>>? headers = null)
+        public async Task<PIResponse?> ValidateCheckWebAuthn(string user, string transactionid, string webAuthnSignResponse, string origin, string? domain = null, List<KeyValuePair<string, string>>? headers = null, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(transactionid) || string.IsNullOrEmpty(webAuthnSignResponse) || string.IsNullOrEmpty(origin))
             {
@@ -291,7 +293,7 @@ namespace PrivacyIDEA_Client
             headers ??= new List<KeyValuePair<string, string>>();
             headers.Add(new KeyValuePair<string, string>("Origin", origin));
 
-            string response = SendRequest("/validate/check", parameters, headers);
+            string response = await SendRequest("/validate/check", parameters, cancellationToken, headers);
             return PIResponse.FromJSON(response, this);
         }
 
