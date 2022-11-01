@@ -301,8 +301,9 @@ namespace PrivacyIDEA_Client
         /// Gets an auth token from the privacyIDEA server using the service account.
         /// Afterward, the token is set as the default authentication header for the HttpClient.
         /// </summary>
+        /// <param name="cancellationToken">optional</param>
         /// <returns>true if success, false otherwise</returns>
-        private bool GetAuthToken()
+        private async Task<bool> GetAuthToken(CancellationToken cancellationToken = default)
         {
             if (!ServiceAccountAvailable())
             {
@@ -310,18 +311,18 @@ namespace PrivacyIDEA_Client
                 return false;
             }
 
-                var map = new Dictionary<string, string>
-                    {
-                        { "username", _Serviceuser },
-                        { "password", _Servicepass }
-                    };
+            var parameters = new Dictionary<string, string>
+                {
+                    { "username", _Serviceuser }, // ServiceAccountAvailable already passed
+                    { "password", _Servicepass }  // ServiceAccountAvailable already passed
+                }; 
 
             if (!string.IsNullOrEmpty(_Servicerealm))
             {
-                map.Add("realm", _Servicerealm);
+                parameters.Add("realm", _Servicerealm);
             }
 
-            string response = SendRequest("/auth", map);
+            string response = await SendRequest("/auth", parameters, cancellationToken);
 
             if (string.IsNullOrEmpty(response))
             {
@@ -340,6 +341,7 @@ namespace PrivacyIDEA_Client
             {
                 Error("/auth response did not have the correct format or did not contain a token.\n" + response);
             }*/
+
             JObject root = JObject.Parse(response);
             if (root["result"] is JToken result)
             {
@@ -347,7 +349,7 @@ namespace PrivacyIDEA_Client
                 {
                     if (tkn["token"] is not null)
                     {
-                        token = (string)tkn["token"]!; // todo how the response looks like? should'nt it be one floor above?
+                        token = (string)tkn["token"]!;
                     }
                 }
             }
