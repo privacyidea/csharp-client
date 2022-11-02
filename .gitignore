@@ -1,1 +1,8 @@
 .vs/
+PrivacyIDEA_Client/bin/
+PrivacyIDEA_Client/obj/
+PrivacyIDEA_Client/Properties/
+Tests/bin/
+Tests/obj/
+
+*.cache
