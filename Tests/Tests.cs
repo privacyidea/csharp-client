@@ -1,4 +1,3 @@
-using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PrivacyIDEA_Client;
 using WireMock.RequestBuilders;
@@ -64,10 +63,11 @@ namespace Tests
             var resp = privacyIDEA.ValidateCheck("test", "test");
 
             Assert.IsNotNull(resp);
-            Assert.IsTrue(resp.Value);
-            Assert.IsTrue(resp.Status);
-            Assert.AreEqual("totp", resp.Type);
-            Assert.AreEqual("PISP0001C673", resp.Serial);
+            Assert.IsNotNull(resp.Result);
+            Assert.IsTrue(resp.Result.Value);
+            Assert.IsTrue(resp.Result.Status);
+            Assert.AreEqual("totp", resp.Result.Type);
+            Assert.AreEqual("PISP0001C673", resp.Result.Serial);
         }
 
         [TestMethod]
@@ -286,29 +286,33 @@ namespace Tests
             var resp = privacyIDEA.TriggerChallenges("test");
 
             Assert.IsNotNull(resp);
-            Assert.AreEqual(false, resp.Value);
-            Assert.AreEqual(true, resp.Status);
-            Assert.AreEqual("02659936574063359702", resp.TransactionID);
-            Assert.AreEqual("Bitte geben Sie einen OTP-Wert ein: , Please confirm the authentication on your mobile device!", resp.Message);
+            Assert.IsNotNull(resp.Result);
+            Assert.AreEqual(false, resp.Result.Value);
+            Assert.AreEqual(true, resp.Result.Status);
+            Assert.AreEqual("02659936574063359702", resp.Result.TransactionID);
+            Assert.AreEqual("Bitte geben Sie einen OTP-Wert ein: , Please confirm the authentication on your mobile device!", resp.Result.Message);
 
-            Assert.IsTrue(resp.TriggeredTokenTypes().Contains("push"));
-            Assert.IsTrue(resp.TriggeredTokenTypes().Contains("hotp"));
-            Assert.IsTrue(resp.TriggeredTokenTypes().Contains("webauthn"));
+            Assert.IsTrue(resp.Result.TriggeredTokenTypes().Contains("push"));
+            Assert.IsTrue(resp.Result.TriggeredTokenTypes().Contains("hotp"));
+            Assert.IsTrue(resp.Result.TriggeredTokenTypes().Contains("webauthn"));
 
-            var c1 = resp.Challenges.Find(item => item.Type == "push");
+            var c1 = resp.Result.Challenges.Find(item => item.Type == "push");
+            Assert.IsNotNull(c1);
             Assert.AreEqual("PIPU0001F75E", c1.Serial);
             Assert.AreEqual("Please confirm the authentication on your mobile device!", c1.Message);
             Assert.AreEqual(c1.Attributes.Count, 0);
 
-            var c2 = resp.Challenges.Find(item => item.Type == "hotp");
+            var c2 = resp.Result.Challenges.Find(item => item.Type == "hotp");
+            Assert.IsNotNull (c2);
             Assert.AreEqual("OATH00020121", c2.Serial);
             Assert.AreEqual("Bitte geben Sie einen OTP-Wert ein: ", c2.Message);
             Assert.AreEqual(c2.Attributes.Count, 0);
 
-            var c3 = resp.Challenges.Find(item => item.Type == "webauthn");
+            var c3 = resp.Result.Challenges.Find(item => item.Type == "webauthn");
+            Assert.IsNotNull(c3);
             Assert.AreEqual("WAN00025CE7", c3.Serial);
             Assert.AreEqual("Please confirm with your WebAuthn token (Yubico U2F EE Serial 61730834)", c3.Message);
-            var signRequest = resp.MergedSignRequest();
+            var signRequest = resp.Result.MergedSignRequest();
             Assert.IsFalse(string.IsNullOrEmpty(signRequest));
             Assert.AreEqual(RemoveWhitespace(mergedSignRequests), RemoveWhitespace(signRequest));
         }
