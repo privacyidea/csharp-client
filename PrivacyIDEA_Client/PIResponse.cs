@@ -7,6 +7,7 @@ namespace PrivacyIDEA_Client
     {
         public string TransactionID { get; set; } = "";
         public string Message { get; set; } = "";
+        public string PreferredClientMode { get; set; } = "";
         public string? ErrorMessage { get; set; } = "";
         public string Type { get; set; } = "";
         public string Serial { get; set; } = "";
@@ -129,7 +130,11 @@ namespace PrivacyIDEA_Client
 
                 if (jobj["detail"] is JToken detail && detail.Type != JTokenType.Null)
                 {
-                    if (detail["transaction_id"] is not null) // todo if null ignore or error?
+                    if (detail["preferred_client_mode"] is not null) // todo if null ignore or error?
+                    {
+                        ret.PreferredClientMode = (string)detail["preferred_client_mode"]!;
+                    }
+                    if (detail["transaction_id"] is not null) 
                     {
                         ret.TransactionID = (string)detail["transaction_id"]!;
                     }
