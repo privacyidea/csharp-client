@@ -216,6 +216,7 @@ namespace Tests
                     .WithStatusCode(200)
                     .WithBody("{\n" +
                                 "  \"detail\": {\n" +
+                                "    \"preferred_client_mode\": \"push\",\n" +
                                 "    \"attributes\": null,\n" +
                                 "    \"message\": \"Bitte geben Sie einen OTP-Wert ein: , Please confirm the authentication on your mobile device!\",\n" +
                                 "    \"messages\": [\n" +
@@ -289,6 +290,7 @@ namespace Tests
             Assert.AreEqual(false, resp.Value);
             Assert.AreEqual(true, resp.Status);
             Assert.AreEqual("02659936574063359702", resp.TransactionID);
+            Assert.AreEqual("push", resp.PreferredClientMode);
             Assert.AreEqual("Bitte geben Sie einen OTP-Wert ein: , Please confirm the authentication on your mobile device!", resp.Message);
 
             Assert.IsTrue(resp.TriggeredTokenTypes().Contains("push"));
