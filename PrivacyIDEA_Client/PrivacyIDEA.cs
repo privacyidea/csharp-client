@@ -43,7 +43,7 @@ namespace PrivacyIDEA_Client
         private string serviceuser, servicepass;
         private string? servicerealm;
         private readonly bool logServerResponse = true;
-        public PILog? Logger { get; set; } = null;
+        public IPILog? Logger { get; set; } = null;
 
         // The webauthn parameters should not be url encoded because they already have the correct format.
         private static readonly List<String> exludeFromURIEscape = new(new string[]
