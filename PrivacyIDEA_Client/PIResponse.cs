@@ -14,7 +14,6 @@ namespace PrivacyIDEA_Client
         public int? ErrorCode { get; set; } = 0;
         public bool Status { get; set; } = false;
         public bool Value { get; set; } = false;
-
         public string Raw { get; set; } = "";
         public List<PIChallenge> Challenges { get; set; } = new List<PIChallenge>();
         private PIResponse() { }
@@ -130,7 +129,7 @@ namespace PrivacyIDEA_Client
 
                 if (jobj["detail"] is JToken detail && detail.Type != JTokenType.Null)
                 {
-                    if (detail["preferred_client_mode"] is not null) // todo if null ignore or error?
+                    if (detail["preferred_client_mode"] is not null)
                     {
                         ret.PreferredClientMode = (string)detail["preferred_client_mode"]!;
                     }
@@ -155,41 +154,47 @@ namespace PrivacyIDEA_Client
                     {
                         foreach (JToken element in multiChallenge.Children())
                         {
-                            string message = (string)element["message"]; // todo if null ignore or error?
-                            string transactionid = (string)element["transaction_id"];
-                            string type = (string)element["type"];
-                            string serial = (string)element["serial"];
-
-                            if (type == "webauthn")
+                            if ((string?)element["message"] is string message && (string?)element["transaction_id"] is string transactionid
+                                && (string?)element["type"] is string type && (string?)element["serial"] is string serial)
                             {
-                                PIWebAuthnSignRequest tmp = new();
-
-                                if (element["attributes"] is JToken attr && attr.Type != JTokenType.Null)
+                                if (type == "webauthn")
                                 {
-                                    var signRequest = attr["webAuthnSignRequest"];
-                                    if (signRequest != null)
+                                    PIWebAuthnSignRequest tmp = new();
+
+                                    if (element["attributes"] is JToken attr && attr.Type != JTokenType.Null)
                                     {
-                                        tmp.WebAuthnSignRequest = signRequest.ToString(Formatting.None);
-                                        tmp.WebAuthnSignRequest.Replace("\n", "");
+                                        var signRequest = attr["webAuthnSignRequest"];
+                                        if (signRequest != null)
+                                        {
+                                            tmp.WebAuthnSignRequest = signRequest.ToString(Formatting.None);
+                                            _ = tmp.WebAuthnSignRequest.Replace("\n", "");
+                                        }
                                     }
-                                }
 
                                     tmp.Message = message;
                                     tmp.Serial = serial;
                                     tmp.TransactionID = transactionid;
                                     tmp.Type = type;
-                                ret.Challenges.Add(tmp);
+                                    ret.Challenges.Add(tmp);
+                                }
+                                else
+                                {
+                                    PIChallenge tmp = new()
+                                    {
+                                        Message = message,
+                                        Serial = serial,
+                                        TransactionID = transactionid,
+                                        Type = type
+                                    };
+                                    ret.Challenges.Add(tmp);
+                                }
                             }
                             else
                             {
-                                PIChallenge tmp = new()
+                                if (privacyIDEA != null)
                                 {
-                                    Message = message,
-                                    Serial = serial,
-                                    TransactionID = transactionid,
-                                    Type = type
-                                };
-                                ret.Challenges.Add(tmp);
+                                    privacyIDEA.Log("Some element(s) not found in " + element.ToString() + " challenge.");
+                                }
                             }
                         }
                     }
