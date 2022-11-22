@@ -23,48 +23,49 @@ namespace PrivacyIDEA_Client
             {
                 if (SSLVerify != _sslVerify)
                 {
-                    httpClientHandler = new HttpClientHandler();
+                    _httpClientHandler = new HttpClientHandler();
                     if (!SSLVerify)
                     {
-                        httpClientHandler.ClientCertificateOptions = ClientCertificateOption.Manual;
-                        httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+                        _httpClientHandler.ClientCertificateOptions = ClientCertificateOption.Manual;
+                        _httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
                     }
-                    httpClient = new HttpClient(httpClientHandler);
-                    httpClient.DefaultRequestHeaders.Add("User-Agent", useragent);
+                    _httpClient = new HttpClient(_httpClientHandler);
+                    _httpClient.DefaultRequestHeaders.Add("User-Agent", _userAgent);
                     _sslVerify = SSLVerify;
                 }
             }
         }
 
-        private HttpClientHandler httpClientHandler;
-        private HttpClient httpClient;
-        private bool disposedValue;
-        private readonly string useragent;
-        private string serviceuser, servicepass;
-        private string? servicerealm;
-        private readonly bool logServerResponse = true;
+        private HttpClientHandler _httpClientHandler;
+        private HttpClient _httpClient;
+        private bool _disposedValue;
+        private readonly string _userAgent;
+        private string? _serviceUser;
+        private string? _servicePass;
+        private string? _serviceRealm;
+        private readonly bool _logServerResponse = true;
         public IPILog? Logger { get; set; } = null;
 
         // The webauthn parameters should not be url encoded because they already have the correct format.
-        private static readonly List<String> exludeFromURIEscape = new(new string[]
+        private static readonly List<String> _exludeFromURIEscape = new(new string[]
            { "credentialid", "clientdata", "signaturedata", "authenticatordata", "userhandle", "assertionclientextensions" });
 
-        private static readonly List<String> logExcludedEndpoints = new(new string[]
+        private static readonly List<String> _logExcludedEndpoints = new(new string[]
            { "/auth", "/validate/polltransaction" });
 
         public PrivacyIDEA(string url, string useragent, bool sslVerify = true)
         {
             this.Url = url;
-            this.useragent = useragent;
+            this._userAgent = useragent;
 
-            httpClientHandler = new HttpClientHandler();
+            _httpClientHandler = new HttpClientHandler();
             if (!sslVerify)
             {
-                httpClientHandler.ClientCertificateOptions = ClientCertificateOption.Manual;
-                httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+                _httpClientHandler.ClientCertificateOptions = ClientCertificateOption.Manual;
+                _httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             }
-            httpClient = new HttpClient(httpClientHandler);
-            httpClient.DefaultRequestHeaders.Add("User-Agent", useragent);
+            _httpClient = new HttpClient(_httpClientHandler);
+            _httpClient.DefaultRequestHeaders.Add("User-Agent", useragent);
         }
 
         /// <summary>
@@ -297,69 +298,73 @@ namespace PrivacyIDEA_Client
         /// <returns>true if success, false otherwise</returns>
         private bool GetAuthToken()
         {
-            if (!ServiceAccountAvailable())
+            if (string.IsNullOrEmpty(_serviceUser) || string.IsNullOrEmpty(_servicePass))
             {
                 Error("Unable to fetch auth token without service account!");
                 return false;
             }
-
+            else
+            {
                 var map = new Dictionary<string, string>
                     {
-                        { "username", serviceuser },
-                        { "password", servicepass }
+                        { "username", _serviceUser },
+                        { "password", _servicePass }
                     };
 
-            if (!string.IsNullOrEmpty(servicerealm))
-            {
-                map.Add("realm", servicerealm);
-            }
-
-            string response = SendRequest("/auth", map);
-
-            if (string.IsNullOrEmpty(response))
-            {
-                Error("/auth did not respond!");
-                return false;
-            }
-
-            string token = "";
-
-      /*      try
-            {
-                dynamic root = JsonConvert.DeserializeObject(response);
-                token = root.result.value.token;
-            }
-            catch (Exception)
-            {
-                Error("/auth response did not have the correct format or did not contain a token.\n" + response);
-            }*/
-            JObject root = JObject.Parse(response);
-            if (root["result"] is JToken result)
-            {
-                if (result["value"] is JToken tkn)
+                if (!string.IsNullOrEmpty(_serviceRealm))
                 {
-                    if (tkn["token"] is not null)
+                    map.Add("realm", _serviceRealm);
+                }
+
+                string response = SendRequest("/auth", map);
+
+                if (string.IsNullOrEmpty(response))
+                {
+                    Error("/auth did not respond!");
+                    return false;
+                }
+
+                string token = "";
+
+                /*      try
+                      {
+                          dynamic root = JsonConvert.DeserializeObject(response);
+                          token = root.result.value.token;
+                      }
+                      catch (Exception)
+                      {
+                          Error("/auth response did not have the correct format or did not contain a token.\n" + response);
+                      }*/
+                // todo rm?
+
+                JObject root = JObject.Parse(response);
+                if (root["result"] is JToken result)
+                {
+                    if (result["value"] is JToken tkn)
                     {
-                        token = (string)tkn["token"]!; // todo how the response looks like? should'nt it be one floor above?
+                        if (tkn["token"] is not null)
+                        {
+                            token = (string)tkn["token"]!;
+                        }
                     }
                 }
-            }
 
-            if (!string.IsNullOrEmpty(token))
-            {
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
-                return true;
+                if (!string.IsNullOrEmpty(token))
+                {
+                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
+                    return true;
+                }
+                return false;
             }
-            return false;
         }
 
         public void SetServiceAccount(string user, string pass, string realm = "")
         {
-            serviceuser = user;
-            servicepass = pass;
+            _serviceUser = user;
+            _servicePass = pass;
             if (!string.IsNullOrEmpty(realm))
             {
-                servicerealm = realm;
+                _serviceRealm = realm;
             }
         }
 
@@ -392,7 +397,7 @@ namespace PrivacyIDEA_Client
                 }
             }
 
-            Task<HttpResponseMessage> responseTask = httpClient.SendAsync(request);
+            Task<HttpResponseMessage> responseTask = _httpClient.SendAsync(request);
 
             var responseMessage = responseTask.GetAwaiter().GetResult();
             if (responseMessage.StatusCode != HttpStatusCode.OK)
@@ -411,7 +416,7 @@ namespace PrivacyIDEA_Client
                 Error(e.Message);
             }
 
-            if (logServerResponse && !string.IsNullOrEmpty(ret) && !logExcludedEndpoints.Contains(endpoint))
+            if (_logServerResponse && !string.IsNullOrEmpty(ret) && !_logExcludedEndpoints.Contains(endpoint))
             {
                 Log(endpoint + " response:\n" + JToken.Parse(ret).ToString(Formatting.Indented));
             }
@@ -469,7 +474,7 @@ namespace PrivacyIDEA_Client
             foreach (var element in dict)
             {
                 sb.Append(element.Key).Append('=');
-                sb.Append((exludeFromURIEscape.Contains(element.Key)) ? element.Value : Uri.EscapeDataString(element.Value));
+                sb.Append((_exludeFromURIEscape.Contains(element.Key)) ? element.Value : Uri.EscapeDataString(element.Value));
                 sb.Append('&');
             }
             // Remove tailing &
@@ -481,11 +486,6 @@ namespace PrivacyIDEA_Client
             string ret = sb.ToString();
             //Log("Built string: " + ret);
             return new StringContent(ret, Encoding.UTF8, "application/x-www-form-urlencoded"); ;
-        }
-
-        internal bool ServiceAccountAvailable()
-        {
-            return !string.IsNullOrEmpty(serviceuser) && !string.IsNullOrEmpty(servicepass);
         }
 
         internal void Log(string message)
@@ -514,16 +514,16 @@ namespace PrivacyIDEA_Client
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_disposedValue)
             {
                 if (disposing)
                 {
                     // Managed
-                    httpClient.Dispose();
-                    httpClientHandler.Dispose();
+                    _httpClient.Dispose();
+                    _httpClientHandler.Dispose();
                 }
                 // Unmanaged
-                disposedValue = true;
+                _disposedValue = true;
             }
         }
 
