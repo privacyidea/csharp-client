@@ -26,10 +26,4 @@
 		<ProjectReference Include="..\PrivacyIDEA_Client\PrivacyIDEA_Client.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<Reference Include="Microsoft.IdentityServer.Web">
-			<HintPath>..\Microsoft.IdentityServer.Web.dll</HintPath>
-		</Reference>
-	</ItemGroup>
-
 </Project>
