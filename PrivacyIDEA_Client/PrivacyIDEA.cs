@@ -24,7 +24,7 @@ namespace PrivacyIDEA_Client
                 if (SSLVerify != _sslVerify)
                 {
                     _httpClientHandler = new HttpClientHandler();
-                    if (!SSLVerify)
+                    if (SSLVerify is false)
                     {
                         _httpClientHandler.ClientCertificateOptions = ClientCertificateOption.Manual;
                         _httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
@@ -59,7 +59,7 @@ namespace PrivacyIDEA_Client
             this._userAgent = useragent;
 
             _httpClientHandler = new HttpClientHandler();
-            if (!sslVerify)
+            if (sslVerify is false)
             {
                 _httpClientHandler.ClientCertificateOptions = ClientCertificateOption.Manual;
                 _httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
@@ -77,7 +77,7 @@ namespace PrivacyIDEA_Client
         /// <returns>PIResponse object or null on error</returns>
         public PIResponse? TriggerChallenges(string username, string? domain = null, List<KeyValuePair<string, string>>? headers = null)
         {
-            if (!GetAuthToken())
+            if (GetAuthToken() is false)
             {
                 Error("Unable to trigger challenges without an auth token!");
                 return null;
@@ -102,7 +102,7 @@ namespace PrivacyIDEA_Client
         /// <returns>true if challenge was answered. false if not or error</returns>
         public bool PollTransaction(string transactionid)
         {
-            if (!string.IsNullOrEmpty(transactionid))
+            if (string.IsNullOrEmpty(transactionid) is false)
             {
                 var map = new Dictionary<string, string>
                 {
@@ -138,7 +138,7 @@ namespace PrivacyIDEA_Client
         /// <returns>true if token exists. false if not or error</returns>
         public bool UserHasToken(string user, string? domain = null)
         {
-            if (!GetAuthToken())
+            if (GetAuthToken() is false)
             {
                 Error("Unable to lookup tokens without an auth token!");
                 return false;
@@ -205,7 +205,7 @@ namespace PrivacyIDEA_Client
                 { "pass", otp }
             };
 
-            if (transactionid != null)
+            if (transactionid is not null)
             {
                 parameters.Add("transaction_id", transactionid);
             }
@@ -221,17 +221,17 @@ namespace PrivacyIDEA_Client
         /// This requires the WebAuthnSignResponse and the Origin from the browser.
         /// </summary>
         /// <param name="user">username</param>
-        /// <param name="transactionid">transaction id of the webauthn challenge</param>
+        /// <param name="transactionID">transaction id of the webauthn challenge</param>
         /// <param name="webAuthnSignResponse">the WebAuthnSignResponse string in json format as returned from the browser</param>
         /// <param name="origin">origin also returned by the browser</param>
         /// <param name="domain">optional domain which can be mapped to a privacyIDEA realm</param>
         /// <param name="headers">optional headers which can be forwarded to the privacyIDEA server</param>
         /// <returns>PIResponse object or null on error</returns>
-        public PIResponse? ValidateCheckWebAuthn(string user, string transactionid, string webAuthnSignResponse, string origin, string? domain = null, List<KeyValuePair<string, string>>? headers = null)
+        public PIResponse? ValidateCheckWebAuthn(string user, string transactionID, string webAuthnSignResponse, string origin, string? domain = null, List<KeyValuePair<string, string>>? headers = null)
         {
-            if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(transactionid) || string.IsNullOrEmpty(webAuthnSignResponse) || string.IsNullOrEmpty(origin))
+            if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(transactionID) || string.IsNullOrEmpty(webAuthnSignResponse) || string.IsNullOrEmpty(origin))
             {
-                Log("ValidateCheckWebAuthn called with missing parameter: user=" + user + ", transactionid=" + transactionid
+                Log("ValidateCheckWebAuthn called with missing parameter: user=" + user + ", transactionid=" + transactionID
                     + ", WebAuthnSignResponse=" + webAuthnSignResponse + ", origin=" + origin);
                 return null;
             }
@@ -248,47 +248,44 @@ namespace PrivacyIDEA_Client
                 return null;
             }
 
-            if (root["credentialid"] is null || root["clientdata"] is null || root["signaturedata"] is null || root["authenticatordata"] is null)
+            if ((string?)root["credentialid"] is string credentialID && (string?)root["clientdata"] is string clientData
+                && (string?)root["signaturedata"] is string signatureData && (string?)root["authenticatordata"] is string authenticatorData)
+            {
+                var parameters = new Dictionary<string, string>
+                {
+                    { "user", user },
+                    { "pass", "" },
+                    { "transaction_id", transactionID },
+                    { "credentialid", credentialID },
+                    { "clientdata", clientData },
+                    { "signaturedata", signatureData },
+                    { "authenticatordata", authenticatorData }
+                };
+
+                // Optionally add UserHandle and AssertionClientExtensions
+                if ((string?)root["userhandle"] is string userHandle)
+                {
+                    parameters.Add("userhandle", userHandle);
+                }
+                if ((string?)root["assertionclientextensions"] is string ace)
+                {
+                    parameters.Add("assertionclientextensions", ace);
+                }
+
+                AddRealmForDomain(domain, parameters);
+
+                // The origin has to be set in the header for WebAuthn authentication
+                headers ??= new List<KeyValuePair<string, string>>();
+                headers.Add(new KeyValuePair<string, string>("Origin", origin));
+
+                string response = SendRequest("/validate/check", parameters, headers);
+                return PIResponse.FromJSON(response, this);
+            }
+            else
             {
                 Log("");
                 return null;
             }
-            string credentialid = (string)root["credentialid"]!;
-            string clientdata = (string)root["clientdata"]!;
-            string signaturedata = (string)root["signaturedata"]!;
-            string authenticatordata = (string)root["authenticatordata"]!;
-
-            var parameters = new Dictionary<string, string>
-            {
-                { "user", user },
-                { "pass", "" },
-                { "transaction_id", transactionid },
-                { "credentialid", credentialid },
-                { "clientdata", clientdata },
-                { "signaturedata", signaturedata },
-                { "authenticatordata", authenticatordata }
-            };
-
-            // Optionally add UserHandle and AssertionClientExtensions
-            string? uh = (string?)root["userhandle"];
-            if (!string.IsNullOrEmpty(uh))
-            {
-                parameters.Add("userhandle", uh);
-            }
-            string? ace = (string?)root["assertionclientextensions"];
-            if (!string.IsNullOrEmpty(ace))
-            {
-                parameters.Add("assertionclientextensions", ace);
-            }
-
-            AddRealmForDomain(domain, parameters);
-
-            // The origin has to be set in the header for WebAuthn authentication
-            headers ??= new List<KeyValuePair<string, string>>();
-            headers.Add(new KeyValuePair<string, string>("Origin", origin));
-
-            string response = SendRequest("/validate/check", parameters, headers);
-            return PIResponse.FromJSON(response, this);
         }
 
         /// <summary>
@@ -311,7 +308,7 @@ namespace PrivacyIDEA_Client
                         { "password", _servicePass }
                     };
 
-                if (!string.IsNullOrEmpty(_serviceRealm))
+                if (string.IsNullOrEmpty(_serviceRealm) is false)
                 {
                     map.Add("realm", _serviceRealm);
                 }
@@ -331,14 +328,14 @@ namespace PrivacyIDEA_Client
                 {
                     if (result["value"] is JToken tkn)
                     {
-                        if (tkn["token"] is not null)
+                        if ((string?)tkn["token"] is string temp)
                         {
-                            token = (string)tkn["token"]!;
+                            token = temp;
                         }
                     }
                 }
 
-                if (!string.IsNullOrEmpty(token))
+                if (string.IsNullOrEmpty(token) is false)
                 {
                     _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(token);
                     return true;
@@ -351,7 +348,7 @@ namespace PrivacyIDEA_Client
         {
             _serviceUser = user;
             _servicePass = pass;
-            if (!string.IsNullOrEmpty(realm))
+            if (string.IsNullOrEmpty(realm) is false)
             {
                 _serviceRealm = realm;
             }
@@ -377,7 +374,7 @@ namespace PrivacyIDEA_Client
                 request.RequestUri = new Uri(this.Url + endpoint + "?" + s);
             }
 
-            if (headers != null && headers.Count > 0)
+            if (headers is not null && headers.Count > 0)
             {
                 foreach (var element in headers)
                 {
@@ -405,7 +402,7 @@ namespace PrivacyIDEA_Client
                 Error(e.Message);
             }
 
-            if (_logServerResponse && !string.IsNullOrEmpty(ret) && !_logExcludedEndpoints.Contains(endpoint))
+            if (_logServerResponse && string.IsNullOrEmpty(ret) is false && _logExcludedEndpoints.Contains(endpoint) is false)
             {
                 Log(endpoint + " response:\n" + JToken.Parse(ret).ToString(Formatting.Indented));
             }
@@ -421,7 +418,7 @@ namespace PrivacyIDEA_Client
         /// <param name="parameters"></param>
         private void AddRealmForDomain(string? domain, Dictionary<string, string> parameters)
         {
-            if (!string.IsNullOrEmpty(domain))
+            if (string.IsNullOrEmpty(domain) is false)
             {
                 string r = "";
                 string d = domain.ToUpper();
@@ -432,13 +429,13 @@ namespace PrivacyIDEA_Client
                     Log("Found realm in mapping: " + r);
                 }
 
-                if (string.IsNullOrEmpty(r) && !string.IsNullOrEmpty(Realm))
+                if (string.IsNullOrEmpty(r) && string.IsNullOrEmpty(Realm) is false)
                 {
                     r = Realm;
                     Log("Using default realm " + r);
                 }
 
-                if (!string.IsNullOrEmpty(r))
+                if (string.IsNullOrEmpty(r) is false)
                 {
                     parameters.Add("realm", r);
                 }
@@ -449,7 +446,7 @@ namespace PrivacyIDEA_Client
             }
             else
             {
-                if (!string.IsNullOrEmpty(Realm))
+                if (string.IsNullOrEmpty(Realm) is false)
                 {
                     parameters.Add("realm", Realm);
                 }
@@ -479,7 +476,7 @@ namespace PrivacyIDEA_Client
 
         internal void Log(string message)
         {
-            if (this.Logger != null)
+            if (this.Logger is not null)
             {
                 this.Logger.Log(message);
             }
@@ -487,7 +484,7 @@ namespace PrivacyIDEA_Client
 
         internal void Error(string message)
         {
-            if (this.Logger != null)
+            if (this.Logger is not null)
             {
                 this.Logger.Error(message);
             }
@@ -495,7 +492,7 @@ namespace PrivacyIDEA_Client
 
         internal void Error(Exception exception)
         {
-            if (this.Logger != null)
+            if (this.Logger is not null)
             {
                 this.Logger.Error(exception);
             }
@@ -503,7 +500,7 @@ namespace PrivacyIDEA_Client
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!_disposedValue)
+            if (_disposedValue is false)
             {
                 if (disposing)
                 {
