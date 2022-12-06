@@ -20,7 +20,7 @@ namespace PrivacyIDEA_Client
         {
             if (string.IsNullOrEmpty(json))
             {
-                if (privacyIDEA != null)
+                if (privacyIDEA is not null)
                 {
                     privacyIDEA.Error("Json to parse is empty!");
                 }
@@ -41,7 +41,7 @@ namespace PrivacyIDEA_Client
                     ret.Status = (bool)(result["status"] ?? false);
 
                     JToken? jVal = result["value"];
-                    if (jVal != null)
+                    if (jVal is not null)
                     {
                         ret.Value = (bool)jVal;
                     }
@@ -53,30 +53,37 @@ namespace PrivacyIDEA_Client
                     }
                 }
 
-                if (jobj["detail"] is JToken detail && detail.Type != JTokenType.Null)
+                if (jobj["detail"] is JToken detail && detail.Type is not JTokenType.Null)
                 {
                     
                     // ret.Type = (string)detail["type"];
-                    ret.Serial = (string)detail["serial"];
-
-                    if (detail["googleurl"] is JToken googleTotp && googleTotp.Type != JTokenType.Null)
+                    if ((string?)detail["serial"] is string serial)
                     {
-                        ret.TotpUrl = (string)googleTotp["value"];
-                        ret.Base64TotpImage = (string)googleTotp["img"];
+                        ret.Serial = serial;
+                    }
+
+                    if (detail["googleurl"] is JToken googleTotp && googleTotp.Type is not JTokenType.Null)
+                    {
+                        if ((string?)googleTotp["value"] is string value)
+                        {
+                            ret.TotpUrl = value;
+                        }
+                        if ((string?)googleTotp["img"] is string img)
+                        {
+                            ret.Base64TotpImage = img;
+                        }
                     }
                 }
             }
             catch (JsonException je)
             {
-                if (privacyIDEA != null)
+                if (privacyIDEA is not null)
                 {
                     privacyIDEA.Error(je);
                 }
                 return null;
             }
-
             return ret;
         }
-
     }
 }
