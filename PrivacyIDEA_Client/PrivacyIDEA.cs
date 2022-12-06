@@ -326,11 +326,11 @@ namespace PrivacyIDEA_Client
                 JObject root = JObject.Parse(response);
                 if (root["result"] is JToken result)
                 {
-                    if (result["value"] is JToken tkn)
+                    if (result["value"] is JToken jVal)
                     {
-                        if ((string?)tkn["token"] is string temp)
+                        if ((string?)jVal["token"] is string s)
                         {
-                            token = temp;
+                            token = s;
                         }
                     }
                 }
