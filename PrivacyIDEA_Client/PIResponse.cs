@@ -7,13 +7,13 @@ namespace PrivacyIDEA_Client
     {
         public string TransactionID { get; set; } = "";
         public string Message { get; set; } = "";
+        public string PreferredClientMode { get; set; } = "";
         public string? ErrorMessage { get; set; } = "";
         public string Type { get; set; } = "";
         public string Serial { get; set; } = "";
         public int? ErrorCode { get; set; } = 0;
         public bool Status { get; set; } = false;
         public bool Value { get; set; } = false;
-
         public string Raw { get; set; } = "";
         public List<PIChallenge> Challenges { get; set; } = new List<PIChallenge>();
         private PIResponse() { }
@@ -95,7 +95,7 @@ namespace PrivacyIDEA_Client
         {
             if (string.IsNullOrEmpty(json))
             {
-                if (privacyIDEA != null)
+                if (privacyIDEA is not null)
                 {
                     privacyIDEA.Error("Json to parse is empty!");
                 }
@@ -114,77 +114,87 @@ namespace PrivacyIDEA_Client
                 {
                     ret.Status = (bool)(result["status"] ?? false);
                     JToken? jVal = result["value"];
-                    if (jVal != null)
+                    if (jVal is not null)
                     {
                         ret.Value = (bool)jVal;
                     }
 
                     JToken? error = result["error"];
-                    if (error != null)
+                    if (error is not null)
                     {
                         ret.ErrorCode = (int)(error["code"] ?? "");
                         ret.ErrorMessage = (string?)(error["message"] ?? "");
                     }
                 }
 
-                if (jobj["detail"] is JToken detail && detail.Type != JTokenType.Null)
+                if (jobj["detail"] is JToken detail && detail.Type is not JTokenType.Null)
                 {
-                    if (detail["transaction_id"] is not null) // todo if null ignore or error?
+                    if ((string?)detail["preferred_client_mode"] is string prefClientMode)
                     {
-                        ret.TransactionID = (string)detail["transaction_id"]!;
+                        ret.PreferredClientMode = prefClientMode;
                     }
-                    if (detail["message"] is not null)
+                    if ((string?)detail["transaction_id"] is string transactionID) 
                     {
-                        ret.Message = (string)detail["message"]!;
+                        ret.TransactionID = transactionID;
                     }
-                    if (detail["type"] is not null)
+                    if ((string?)detail["message"] is string message)
                     {
-                        ret.Type = (string)detail["type"]!;
+                        ret.Message = message;
                     }
-                    if (detail["serial"] is not null)
+                    if ((string?)detail["type"] is string type)
                     {
-                        ret.Serial = (string)detail["serial"]!;
+                        ret.Type = type;
+                    }
+                    if ((string?)detail["serial"] is string serial)
+                    {
+                        ret.Serial = serial;
                     }
 
                     if (detail["multi_challenge"] is JArray multiChallenge)
                     {
                         foreach (JToken element in multiChallenge.Children())
                         {
-                            string message = (string)element["message"]; // todo if null ignore or error?
-                            string transactionid = (string)element["transaction_id"];
-                            string type = (string)element["type"];
-                            string serial = (string)element["serial"];
-
-                            if (type == "webauthn")
+                            if ((string?)element["message"] is string chalMessage && (string?)element["transaction_id"] is string chalTransactionID
+                                && (string?)element["type"] is string chalType && (string?)element["serial"] is string chalSerial)
                             {
-                                PIWebAuthnSignRequest tmp = new();
-
-                                if (element["attributes"] is JToken attr && attr.Type != JTokenType.Null)
+                                if (chalType == "webauthn")
                                 {
-                                    var signRequest = attr["webAuthnSignRequest"];
-                                    if (signRequest != null)
-                                    {
-                                        tmp.WebAuthnSignRequest = signRequest.ToString(Formatting.None);
-                                        tmp.WebAuthnSignRequest.Replace("\n", "");
-                                    }
-                                }
+                                    PIWebAuthnSignRequest tmp = new();
 
-                                    tmp.Message = message;
-                                    tmp.Serial = serial;
-                                    tmp.TransactionID = transactionid;
-                                    tmp.Type = type;
-                                ret.Challenges.Add(tmp);
+                                    if (element["attributes"] is JToken attr && attr.Type is not JTokenType.Null)
+                                    {
+                                        var signRequest = attr["webAuthnSignRequest"];
+                                        if (signRequest is not null)
+                                        {
+                                            tmp.WebAuthnSignRequest = signRequest.ToString(Formatting.None);
+                                            _ = tmp.WebAuthnSignRequest.Replace("\n", "");
+                                        }
+                                    }
+
+                                    tmp.Message = chalMessage;
+                                    tmp.Serial = chalSerial;
+                                    tmp.TransactionID = chalTransactionID;
+                                    tmp.Type = chalType;
+                                    ret.Challenges.Add(tmp);
+                                }
+                                else
+                                {
+                                    PIChallenge tmp = new()
+                                    {
+                                        Message = chalMessage,
+                                        Serial = chalSerial,
+                                        TransactionID = chalTransactionID,
+                                        Type = chalType
+                                    };
+                                    ret.Challenges.Add(tmp);
+                                }
                             }
                             else
                             {
-                                PIChallenge tmp = new()
+                                if (privacyIDEA is not null)
                                 {
-                                    Message = message,
-                                    Serial = serial,
-                                    TransactionID = transactionid,
-                                    Type = type
-                                };
-                                ret.Challenges.Add(tmp);
+                                    privacyIDEA.Log("Some element(s) not found in " + element.ToString() + " challenge.");
+                                }
                             }
                         }
                     }
@@ -192,7 +202,7 @@ namespace PrivacyIDEA_Client
             }
             catch (Exception ex)
             {
-                if (privacyIDEA != null)
+                if (privacyIDEA is not null)
                 {
                     privacyIDEA.Error(ex);
                 }

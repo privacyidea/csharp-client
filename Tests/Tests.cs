@@ -216,6 +216,7 @@ namespace Tests
                     .WithStatusCode(200)
                     .WithBody("{\n" +
                                 "  \"detail\": {\n" +
+                                "    \"preferred_client_mode\": \"push\",\n" +
                                 "    \"attributes\": null,\n" +
                                 "    \"message\": \"Bitte geben Sie einen OTP-Wert ein: , Please confirm the authentication on your mobile device!\",\n" +
                                 "    \"messages\": [\n" +
@@ -286,11 +287,11 @@ namespace Tests
             var resp = privacyIDEA.TriggerChallenges("test");
 
             Assert.IsNotNull(resp);
-            Assert.IsNotNull(resp.Result);
-            Assert.AreEqual(false, resp.Result.Value);
-            Assert.AreEqual(true, resp.Result.Status);
-            Assert.AreEqual("02659936574063359702", resp.Result.TransactionID);
-            Assert.AreEqual("Bitte geben Sie einen OTP-Wert ein: , Please confirm the authentication on your mobile device!", resp.Result.Message);
+            Assert.AreEqual(false, resp.Value);
+            Assert.AreEqual(true, resp.Status);
+            Assert.AreEqual("02659936574063359702", resp.TransactionID);
+            Assert.AreEqual("push", resp.PreferredClientMode);
+            Assert.AreEqual("Bitte geben Sie einen OTP-Wert ein: , Please confirm the authentication on your mobile device!", resp.Message);
 
             Assert.IsTrue(resp.Result.TriggeredTokenTypes().Contains("push"));
             Assert.IsTrue(resp.Result.TriggeredTokenTypes().Contains("hotp"));
