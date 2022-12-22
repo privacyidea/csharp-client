@@ -32,7 +32,7 @@ on:
   push:
     branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "5-add-action-to-run-tests-for-every-pr" ]
 
 jobs:
 
