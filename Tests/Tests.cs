@@ -13,7 +13,7 @@ namespace Tests
     {
         WireMockServer server;
         PrivacyIDEA privacyIDEA;
-        private string authToken = "eyJ0eXAiOiJ...KV1QiLC6chGIM";
+        private readonly string authToken = "eyJ0eXAiOiJ...KV1QiLC6chGIM";
 
 
         [TestInitialize]
@@ -303,7 +303,7 @@ namespace Tests
             Assert.IsFalse(string.IsNullOrEmpty(signRequest));
             Assert.AreEqual(RemoveWhitespace(mergedSignRequests), RemoveWhitespace(signRequest));
 
-            // Test preferred_client_mode push
+            // Test preferred_client_mode: push
             server
                 .Given(
                     Request.Create()
@@ -323,10 +323,7 @@ namespace Tests
             Assert.IsNotNull(resp); //todo rm
             Debug.WriteLine("response push!!! : " + resp.PreferredClientMode);
 
-            Assert.IsNotNull(resp);
-            Assert.AreEqual("push", resp.PreferredClientMode);
-
-            // Test preferred_client_mode otp
+            // Test preferred_client_mode: otp
             server
             .Given(
                 Request.Create()
@@ -345,10 +342,7 @@ namespace Tests
             Assert.IsNotNull(resp);
             Assert.AreEqual("otp", resp.PreferredClientMode);
 
-            Assert.IsNotNull(resp); //todo rm
-            Debug.WriteLine("response 2 otp!!! : " + resp.PreferredClientMode);
-
-            // Test preferred_client_mode webauthn
+            // Test preferred_client_mode: webauthn
             server
             .Given(
                 Request.Create()
@@ -366,9 +360,6 @@ namespace Tests
             resp = privacyIDEA.TriggerChallenges("testwebauthn");
             Assert.IsNotNull(resp);
             Assert.AreEqual("webauthn", resp.PreferredClientMode);
-
-            Assert.IsNotNull(resp); //todo rm
-            Debug.WriteLine("response 2 webauthn!!! : " + resp.PreferredClientMode);
         }
 
         private static string TCResponseWithMode(string preferredClientMode)
