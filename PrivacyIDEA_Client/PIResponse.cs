@@ -7,6 +7,7 @@ namespace PrivacyIDEA_Client
     {
         public string TransactionID { get; set; } = "";
         public string Message { get; set; } = "";
+        public string Image { get; set; } = "";
         public string PreferredClientMode { get; set; } = "";
         public string? ErrorMessage { get; set; } = "";
         public string Type { get; set; } = "";
@@ -141,6 +142,10 @@ namespace PrivacyIDEA_Client
                     {
                         ret.Message = message;
                     }
+                    if ((string?)detail["image"] is string image)
+                    {
+                        ret.Image = image;
+                    }
                     if ((string?)detail["type"] is string type)
                     {
                         ret.Type = type;
@@ -163,6 +168,11 @@ namespace PrivacyIDEA_Client
 
                                     if (element["attributes"] is JToken attr && attr.Type is not JTokenType.Null)
                                     {
+                                        if (attr["img"] is JToken img && img.Type is not JTokenType.Null)
+                                        {
+                                            tmp.Img = img.ToString();
+                                        }
+
                                         var signRequest = attr["webAuthnSignRequest"];
                                         if (signRequest is not null)
                                         {
