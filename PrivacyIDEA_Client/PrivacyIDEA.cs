@@ -12,16 +12,16 @@ namespace PrivacyIDEA_Client
         public string Realm { get; set; } = "";
         public Dictionary<string, string> RealmMap { get; set; } = new Dictionary<string, string>();
 
-        private bool _sslVerify = true;
+        private bool _SSLVerify = true;
         public bool SSLVerify
         {
             get
             {
-                return _sslVerify;
+                return _SSLVerify;
             }
             set
             {
-                if (SSLVerify != _sslVerify)
+                if (SSLVerify != _SSLVerify)
                 {
                     _httpClientHandler = new HttpClientHandler();
                     if (SSLVerify is false)
@@ -74,10 +74,11 @@ namespace PrivacyIDEA_Client
         /// <param name="username">username to trigger challenges for</param>
         /// <param name="domain">optional domain which can be mapped to a privacyIDEA realm</param>
         /// <param name="headers">optional headers which can be forwarded to the privacyIDEA server</param>
+        /// <param name="cancellationToken">optional</param>
         /// <returns>PIResponse object or null on error</returns>
-        public PIResponse? TriggerChallenges(string username, string? domain = null, List<KeyValuePair<string, string>>? headers = null)
+        public async Task<PIResponse?> TriggerChallenges(string username, string? domain = null, List<KeyValuePair<string, string>>? headers = null, CancellationToken cancellationToken = default)
         {
-            if (GetAuthToken() is false)
+            if (await GetAuthToken(cancellationToken) is false)
             {
                 Error("Unable to trigger challenges without an auth token!");
                 return null;
@@ -89,7 +90,7 @@ namespace PrivacyIDEA_Client
 
             AddRealmForDomain(domain, parameters);
 
-            string response = SendRequest("/validate/triggerchallenge", parameters, headers);
+            string response = await SendRequest("/validate/triggerchallenge", parameters, "POST", headers, cancellationToken);
             PIResponse? ret = PIResponse.FromJSON(response, this);
 
             return ret;
@@ -99,17 +100,18 @@ namespace PrivacyIDEA_Client
         /// Check if the challenge for the given transaction id has been answered yet. This is done using the /validate/polltransaction endpoint.
         /// </summary>
         /// <param name="transactionid"></param>
+        /// <param name="cancellationToken">optional</param>
         /// <returns>true if challenge was answered. false if not or error</returns>
-        public bool PollTransaction(string transactionid)
+        public async Task<bool> PollTransaction(string transactionid, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(transactionid) is false)
             {
-                var map = new Dictionary<string, string>
+                var parameters = new Dictionary<string, string>
                 {
                     { "transaction_id", transactionid }
                 };
 
-                string response = SendRequest("/validate/polltransaction", map, new List<KeyValuePair<string, string>>(), "GET");
+                string response = await SendRequest("/validate/polltransaction", parameters, "GET", new List<KeyValuePair<string, string>>(), cancellationToken);
 
                 if (string.IsNullOrEmpty(response))
                 {
@@ -135,10 +137,11 @@ namespace PrivacyIDEA_Client
         /// </summary>
         /// <param name="user">username</param>
         /// <param name="domain">optional domain which can be mapped to a privacyIDEA realm</param>
+        /// <param name="cancellationToken">optional</param>
         /// <returns>true if token exists. false if not or error</returns>
-        public bool UserHasToken(string user, string? domain = null)
+        public async Task<bool> UserHasToken(string user, string? domain = null, CancellationToken cancellationToken = default)
         {
-            if (GetAuthToken() is false)
+            if (await GetAuthToken(cancellationToken) is false)
             {
                 Error("Unable to lookup tokens without an auth token!");
                 return false;
@@ -149,7 +152,7 @@ namespace PrivacyIDEA_Client
             };
             AddRealmForDomain(domain, parameters);
 
-            string response = SendRequest("/token/", parameters, new List<KeyValuePair<string, string>>(), "GET");
+            string response = await SendRequest("/token/", parameters, "GET", new List<KeyValuePair<string, string>>(), cancellationToken);
             if (string.IsNullOrEmpty(response))
             {
                 Error("/token/ did not respond!");
@@ -171,8 +174,9 @@ namespace PrivacyIDEA_Client
         /// </summary>
         /// <param name="user">username</param>
         /// <param name="domain">optional domain which can be mapped to a privacyIDEA realm</param>
+        /// <param name="cancellationToken">optional</param>
         /// <returns>PIEnrollResponse object or null on error</returns>
-        public PIEnrollResponse TokenInit(string user, string? domain = null)
+        public async Task<PIEnrollResponse?> TokenInit(string user, string? domain = null, CancellationToken cancellationToken = default)
         {
             var parameters = new Dictionary<string, string>
             {
@@ -182,7 +186,7 @@ namespace PrivacyIDEA_Client
             };
             AddRealmForDomain(domain, parameters);
 
-            string response = SendRequest("/token/init", parameters, new List<KeyValuePair<string, string>>());
+            string response = await SendRequest("/token/init", parameters, "POST", new List<KeyValuePair<string, string>>(), cancellationToken);
             return PIEnrollResponse.FromJSON(response, this);
         }
 
@@ -196,8 +200,9 @@ namespace PrivacyIDEA_Client
         /// <param name="transactionid">optional transaction id to refer to a challenge</param>
         /// <param name="domain">optional domain which can be mapped to a privacyIDEA realm</param>
         /// <param name="headers">optional headers which can be forwarded to the privacyIDEA server</param>
+        /// <param name="cancellationToken">optional</param>
         /// <returns>PIResponse object or null on error</returns>
-        public PIResponse ValidateCheck(string user, string otp, string? transactionid = null, string? domain = null, List<KeyValuePair<string, string>>? headers = null)
+        public async Task<PIResponse?> ValidateCheck(string user, string otp, string? transactionid = null, string? domain = null, List<KeyValuePair<string, string>>? headers = null, CancellationToken cancellationToken = default)
         {
             var parameters = new Dictionary<string, string>
             {
@@ -212,7 +217,7 @@ namespace PrivacyIDEA_Client
 
             AddRealmForDomain(domain, parameters);
 
-            string response = SendRequest("/validate/check", parameters, headers);
+            string response = await SendRequest("/validate/check", parameters, "POST", headers, cancellationToken);
             return PIResponse.FromJSON(response, this);
         }
 
@@ -226,8 +231,9 @@ namespace PrivacyIDEA_Client
         /// <param name="origin">origin also returned by the browser</param>
         /// <param name="domain">optional domain which can be mapped to a privacyIDEA realm</param>
         /// <param name="headers">optional headers which can be forwarded to the privacyIDEA server</param>
+        /// <param name="cancellationToken">optional</param>
         /// <returns>PIResponse object or null on error</returns>
-        public PIResponse? ValidateCheckWebAuthn(string user, string transactionID, string webAuthnSignResponse, string origin, string? domain = null, List<KeyValuePair<string, string>>? headers = null)
+        public async Task<PIResponse?> ValidateCheckWebAuthn(string user, string transactionID, string webAuthnSignResponse, string origin, string? domain = null, List<KeyValuePair<string, string>>? headers = null, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(transactionID) || string.IsNullOrEmpty(webAuthnSignResponse) || string.IsNullOrEmpty(origin))
             {
@@ -286,14 +292,24 @@ namespace PrivacyIDEA_Client
                 Log("");
                 return null;
             }
+            
+            AddRealmForDomain(domain, parameters);
+
+            // The origin has to be set in the header for WebAuthn authentication
+            headers ??= new List<KeyValuePair<string, string>>();
+            headers.Add(new KeyValuePair<string, string>("Origin", origin));
+
+            string response = await SendRequest("/validate/check", parameters, "POST", headers, cancellationToken);
+            return PIResponse.FromJSON(response, this);
         }
 
         /// <summary>
         /// Gets an auth token from the privacyIDEA server using the service account.
         /// Afterward, the token is set as the default authentication header for the HttpClient.
         /// </summary>
+        /// <param name="cancellationToken">optional</param>
         /// <returns>true if success, false otherwise</returns>
-        private bool GetAuthToken()
+        private async Task<bool> GetAuthToken(CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(_serviceUser) || string.IsNullOrEmpty(_servicePass))
             {
@@ -313,7 +329,7 @@ namespace PrivacyIDEA_Client
                     map.Add("realm", _serviceRealm);
                 }
 
-                string response = SendRequest("/auth", map);
+            string response = await SendRequest("/auth", parameters, "POST", null, cancellationToken);
 
                 if (string.IsNullOrEmpty(response))
                 {
@@ -353,39 +369,40 @@ namespace PrivacyIDEA_Client
                 _serviceRealm = realm;
             }
         }
-
-        private string SendRequest(string endpoint, Dictionary<string, string> parameters, List<KeyValuePair<string, string>>? headers = null, string method = "POST")
+        
+        private Task<string> SendRequest(string endpoint, Dictionary<string, string> parameters, string method,
+            List<KeyValuePair<string, string>>? headers = null, CancellationToken cancellationToken = default)
         {
-            Log("Sending [" + string.Join(" , ", parameters) + "] to [" + endpoint + "] with method [" + method + "]");
+            Log("Sending [" + string.Join(" , ", parameters) + "] to [" + Url + endpoint + "] with method [" + method + "]");
 
-            var stringContent = DictToEncodedStringContent(parameters);
+            StringContent stringContent = DictToEncodedStringContent(parameters);
 
             HttpRequestMessage request = new();
             if (method == "POST")
             {
                 request.Method = HttpMethod.Post;
-                request.RequestUri = new Uri(this.Url + endpoint);
+                request.RequestUri = new Uri(Url + endpoint);
                 request.Content = stringContent;
             }
             else
             {
-                string s = stringContent.ReadAsStringAsync().GetAwaiter().GetResult();
+                string s = stringContent.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult();
                 request.Method = HttpMethod.Get;
-                request.RequestUri = new Uri(this.Url + endpoint + "?" + s);
+                request.RequestUri = new Uri(Url + endpoint + "?" + s);
             }
 
             if (headers is not null && headers.Count > 0)
             {
-                foreach (var element in headers)
+                foreach (KeyValuePair<string, string> element in headers)
                 {
                     request.Headers.Add(element.Key, element.Value);
-                    Log("Forwarding headers: " + element.Key + " = " + element.Value);
                 }
             }
 
-            Task<HttpResponseMessage> responseTask = _httpClient.SendAsync(request);
+            var awaiter = _httpClient.SendAsync(request, cancellationToken).GetAwaiter();
 
-            var responseMessage = responseTask.GetAwaiter().GetResult();
+            HttpResponseMessage responseMessage = awaiter.GetResult();
+
             if (responseMessage.StatusCode != HttpStatusCode.OK)
             {
                 Error("The request to " + endpoint + " returned HttpStatusCode " + responseMessage.StatusCode);
@@ -395,7 +412,7 @@ namespace PrivacyIDEA_Client
             string ret = "";
             try
             {
-                ret = responseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                ret = responseMessage.Content.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult();
             }
             catch (Exception e)
             {
@@ -407,7 +424,7 @@ namespace PrivacyIDEA_Client
                 Log(endpoint + " response:\n" + JToken.Parse(ret).ToString(Formatting.Indented));
             }
 
-            return ret;
+            return Task.FromResult(ret);
         }
 
         /// <summary>
