@@ -31,7 +31,7 @@ namespace PrivacyIDEA_Client
                     }
                     _httpClient = new HttpClient(_httpClientHandler);
                     _httpClient.DefaultRequestHeaders.Add("User-Agent", _userAgent);
-                    _sslVerify = SSLVerify;
+                    _SSLVerify = SSLVerify;
                 }
             }
         }
@@ -119,7 +119,7 @@ namespace PrivacyIDEA_Client
                     return false;
                 }
 
-                bool ret = false;            
+                bool ret = false;
                 JObject root = JObject.Parse(response);
 
                 if (root["result"] is JToken result)
@@ -284,23 +284,14 @@ namespace PrivacyIDEA_Client
                 headers ??= new List<KeyValuePair<string, string>>();
                 headers.Add(new KeyValuePair<string, string>("Origin", origin));
 
-                string response = SendRequest("/validate/check", parameters, headers);
+                string response = await SendRequest("/validate/check", parameters, "POST", headers, cancellationToken);
                 return PIResponse.FromJSON(response, this);
             }
             else
             {
-                Log("");
+                Log($"Incomplete WebAuthn data. Parameter(s) might be empty:\n{webAuthnSignResponse}");
                 return null;
             }
-            
-            AddRealmForDomain(domain, parameters);
-
-            // The origin has to be set in the header for WebAuthn authentication
-            headers ??= new List<KeyValuePair<string, string>>();
-            headers.Add(new KeyValuePair<string, string>("Origin", origin));
-
-            string response = await SendRequest("/validate/check", parameters, "POST", headers, cancellationToken);
-            return PIResponse.FromJSON(response, this);
         }
 
         /// <summary>
@@ -318,7 +309,7 @@ namespace PrivacyIDEA_Client
             }
             else
             {
-                var map = new Dictionary<string, string>
+                var parameters = new Dictionary<string, string>
                     {
                         { "username", _serviceUser },
                         { "password", _servicePass }
@@ -326,10 +317,10 @@ namespace PrivacyIDEA_Client
 
                 if (string.IsNullOrEmpty(_serviceRealm) is false)
                 {
-                    map.Add("realm", _serviceRealm);
+                    parameters.Add("realm", _serviceRealm);
                 }
 
-            string response = await SendRequest("/auth", parameters, "POST", null, cancellationToken);
+                string response = await SendRequest("/auth", parameters, "POST", null, cancellationToken);
 
                 if (string.IsNullOrEmpty(response))
                 {
@@ -369,7 +360,7 @@ namespace PrivacyIDEA_Client
                 _serviceRealm = realm;
             }
         }
-        
+
         private Task<string> SendRequest(string endpoint, Dictionary<string, string> parameters, string method,
             List<KeyValuePair<string, string>>? headers = null, CancellationToken cancellationToken = default)
         {
@@ -467,7 +458,7 @@ namespace PrivacyIDEA_Client
                 {
                     parameters.Add("realm", Realm);
                 }
-            }            
+            }
         }
 
         internal static StringContent DictToEncodedStringContent(Dictionary<string, string> dict)
@@ -493,38 +484,29 @@ namespace PrivacyIDEA_Client
 
         internal void Log(string message)
         {
-            if (this.Logger is not null)
-            {
-                this.Logger.Log(message);
-            }
+            this.Logger?.Log(message);
         }
 
         internal void Error(string message)
         {
-            if (this.Logger is not null)
-            {
-                this.Logger.Error(message);
-            }
+            this.Logger?.Error(message);
         }
 
         internal void Error(Exception exception)
         {
-            if (this.Logger is not null)
-            {
-                this.Logger.Error(exception);
-            }
+            this.Logger?.Error(exception);
         }
 
         protected virtual void Dispose(bool disposing)
         {
-            if (_disposedValue is false)
             {
-                if (disposing)
-                {
-                    // Managed
-                    _httpClient.Dispose();
-                    _httpClientHandler.Dispose();
-                }
+                if (_disposedValue is false)
+                    if (disposing)
+                    {
+                        // Managed
+                        _httpClient.Dispose();
+                        _httpClientHandler.Dispose();
+                    }
                 // Unmanaged
                 _disposedValue = true;
             }
