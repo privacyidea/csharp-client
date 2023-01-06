@@ -11,10 +11,10 @@ namespace Tests
     [TestClass]
     public class Tests
     {
+#pragma warning disable CS8618 // [TestInitialize] acts as constructor
         WireMockServer server;
         PrivacyIDEA privacyIDEA;
         private readonly string _AuthToken = "eyJ0eXAiOiJ...KV1QiLC6chGIM";
-
 
         [TestInitialize]
         public void Setup()
@@ -67,14 +67,15 @@ namespace Tests
             var resp = privacyIDEA.ValidateCheck("test", "test");
 
             Assert.IsNotNull(resp);
-            Assert.IsTrue(resp.Value);
-            Assert.IsTrue(resp.Status);
-            Assert.AreEqual("totp", resp.Type);
-            Assert.AreEqual("PISP0001C673", resp.Serial);
+            Assert.IsNotNull(resp.Result);
+            Assert.IsTrue(resp.Result.Value);
+            Assert.IsTrue(resp.Result.Status);
+            Assert.AreEqual("totp", resp.Result.Type);
+            Assert.AreEqual("PISP0001C673", resp.Result.Serial);
         }
 
         [TestMethod]
-        public void TriggerChallenges()
+        public async Task TriggerChallenges()
         {
             string webAuthnSignRequest1 = "{\n" +
                 "            \"allowCredentials\": [\n" +
@@ -271,7 +272,7 @@ namespace Tests
 
             privacyIDEA.SetServiceAccount("admin", "admin");
 
-            var resp = privacyIDEA.TriggerChallenges("test");
+            var resp = await privacyIDEA.TriggerChallenges("test");
 
             Assert.IsNotNull(resp);
             Assert.AreEqual(false, resp.Value);
