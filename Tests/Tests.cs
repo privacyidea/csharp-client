@@ -13,7 +13,7 @@ namespace Tests
     {
         WireMockServer server;
         PrivacyIDEA privacyIDEA;
-        private readonly string authToken = "eyJ0eXAiOiJ...KV1QiLC6chGIM";
+        private readonly string _AuthToken = "eyJ0eXAiOiJ...KV1QiLC6chGIM";
 
 
         [TestInitialize]
@@ -160,7 +160,7 @@ namespace Tests
                 "                \"resync\"\n" +
                 "            ],\n" +
                 "            \"role\": \"admin\",\n" +
-                "            \"token\": \"" + this.authToken + "\",\n" +
+                "            \"token\": \"" + _AuthToken + "\",\n" +
                 "            \"username\": \"admin\",\n" +
                 "            \"logout_time\": 120,\n" +
                 "            \"default_tokentype\": \"hotp\",\n" +
@@ -261,7 +261,7 @@ namespace Tests
                     .WithPath("/validate/triggerchallenge")
                     .UsingPost()
                     .WithBody("user=test")
-                    .WithHeader("Authorization", this.authToken)
+                    .WithHeader("Authorization", _AuthToken)
                     .WithHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
                     )
                 .RespondWith(
@@ -310,7 +310,7 @@ namespace Tests
                     .WithPath("/validate/triggerchallenge")
                     .UsingPost()
                     .WithBody("user=testpush")
-                    .WithHeader("Authorization", this.authToken)
+                    .WithHeader("Authorization", _AuthToken)
                     .WithHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
                     )
                 .RespondWith(
@@ -330,7 +330,7 @@ namespace Tests
                 .WithPath("/validate/triggerchallenge")
                 .UsingPost()
                 .WithBody("user=testotp")
-                .WithHeader("Authorization", this.authToken)
+                .WithHeader("Authorization", _AuthToken)
                 .WithHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
                 )
             .RespondWith(
@@ -349,7 +349,7 @@ namespace Tests
                 .WithPath("/validate/triggerchallenge")
                 .UsingPost()
                 .WithBody("user=testwebauthn")
-                .WithHeader("Authorization", this.authToken)
+                .WithHeader("Authorization", _AuthToken)
                 .WithHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
                 )
             .RespondWith(
