@@ -319,7 +319,7 @@ namespace Tests
                     .WithStatusCode(200)
                     .WithBody(TCResponseWithMode("poll")));
 
-            resp = privacyIDEA.TriggerChallenges("testpush");
+            resp = await privacyIDEA.TriggerChallenges("testpush");
 
             Assert.IsNotNull(resp); //todo rm
             Debug.WriteLine("response push!!! : " + resp.PreferredClientMode);
@@ -339,7 +339,7 @@ namespace Tests
                 .WithStatusCode(200)
                 .WithBody(TCResponseWithMode("interactive")));
 
-            resp = privacyIDEA.TriggerChallenges("testotp");
+            resp = await privacyIDEA.TriggerChallenges("testotp");
             Assert.IsNotNull(resp);
             Assert.AreEqual("otp", resp.PreferredClientMode);
 
@@ -358,7 +358,7 @@ namespace Tests
                 .WithStatusCode(200)
                 .WithBody(TCResponseWithMode("webauthn")));
 
-            resp = privacyIDEA.TriggerChallenges("testwebauthn");
+            resp = await privacyIDEA.TriggerChallenges("testwebauthn");
             Assert.IsNotNull(resp);
             Assert.AreEqual("webauthn", resp.PreferredClientMode);
         }
