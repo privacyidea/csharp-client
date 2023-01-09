@@ -189,6 +189,25 @@ namespace Tests
              resp = await privacyIDEA.TriggerChallenges("noWebauthn");
              Assert.IsNotNull(resp);
              Assert.AreEqual("", resp.MergedSignRequest());
+
+            // Test missing challenge element
+            server
+            .Given(
+                Request.Create()
+                .WithPath("/validate/triggerchallenge")
+                .UsingPost()
+                .WithBody("user=missingElement")
+                .WithHeader("Authorization", GetAuthToken())
+                .WithHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                )
+            .RespondWith(
+                Response.Create()
+                .WithStatusCode(200)
+                .WithBody(GetResponseMissingChallengeElement()));
+
+            resp = await privacyIDEA.TriggerChallenges("missingElement");
+            Assert.IsNotNull(resp);
+            Assert.IsNull(resp.Challenges.Find(item => item.Type == "hotp"));            
         }
 
         // Response utils
@@ -509,6 +528,46 @@ namespace Tests
                 "        \"serial\": \"PIPU0001F75E\",\n" +
                 "        \"transaction_id\": \"02659936574063359702\",\n" +
                 "        \"type\": \"push\"\n" +
+                "      }\n" +
+                "    ],\n" +
+                "    \"serial\": \"PIPU0001F75E\",\n" +
+                "    \"threadid\": 140040525666048,\n" +
+                "    \"transaction_id\": \"02659936574063359702\",\n" +
+                "    \"transaction_ids\": [\n" +
+                "      \"02659936574063359702\",\n" +
+                "      \"02659936574063359702\"\n" +
+                "    ],\n" +
+                "    \"type\": \"push\"\n" +
+                "  },\n" +
+                "  \"id\": 1,\n" +
+                "  \"jsonrpc\": \"2.0\",\n" +
+                "  \"result\": {\n" +
+                "    \"status\": true,\n" +
+                "    \"value\": false\n" +
+                "  },\n" +
+                "  \"time\": 1589360175.594304,\n" +
+                "  \"version\": \"privacyIDEA 3.2.1\",\n" +
+                "  \"versionnumber\": \"3.2.1\",\n" +
+                "  \"signature\": \"rsa_sha256_pss:AAAAAAAAAA\"\n" +
+                "}";
+        }
+
+        private static string GetResponseMissingChallengeElement()
+        {
+            return "{\n" +
+                "  \"detail\": {\n" +
+                "    \"attributes\": null,\n" +
+                "    \"message\": \"Bitte geben Sie einen OTP-Wert ein: , Please confirm the authentication on your mobile device!\",\n" +
+                "    \"messages\": [\n" +
+                "      \"Bitte geben Sie einen OTP-Wert ein: \",\n" +
+                "      \"Please confirm the authentication on your mobile device!\"\n" +
+                "    ],\n" +
+                "    \"multi_challenge\": [\n" +
+                "      {\n" +
+                "        \"attributes\": null,\n" +
+                "        \"serial\": \"OATH00020121\",\n" +
+                "        \"transaction_id\": \"02659936574063359702\",\n" +
+                "        \"type\": \"hotp\"\n" +
                 "      }\n" +
                 "    ],\n" +
                 "    \"serial\": \"PIPU0001F75E\",\n" +
