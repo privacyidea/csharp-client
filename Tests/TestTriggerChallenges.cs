@@ -43,7 +43,7 @@ namespace Tests
                 .RespondWith(
                     Response.Create()
                     .WithStatusCode(200)
-                    .WithBody(GetPostAuthBody()));
+                    .WithBody(GetResponsePostAuth()));
 
             // Trigger challenge response
             server
@@ -58,7 +58,7 @@ namespace Tests
                 .RespondWith(
                     Response.Create()
                     .WithStatusCode(200)
-                    .WithBody(GetTCResponse()));
+                    .WithBody(GetResponseTC()));
 
             privacyIDEA.SetServiceAccount("admin", "admin");
 
@@ -108,7 +108,7 @@ namespace Tests
                 .RespondWith(
                     Response.Create()
                     .WithStatusCode(200)
-                    .WithBody(GetTCBodyWithPreferredMode("poll")));
+                    .WithBody(GetResponsePreferredMode("poll")));
 
             resp = await privacyIDEA.TriggerChallenges("testpush");
 
@@ -127,7 +127,7 @@ namespace Tests
             .RespondWith(
                 Response.Create()
                 .WithStatusCode(200)
-                .WithBody(GetTCBodyWithPreferredMode("interactive")));
+                .WithBody(GetResponsePreferredMode("interactive")));
 
             resp = await privacyIDEA.TriggerChallenges("testotp");
             Assert.IsNotNull(resp);
@@ -146,7 +146,7 @@ namespace Tests
             .RespondWith(
                 Response.Create()
                 .WithStatusCode(200)
-                .WithBody(GetTCBodyWithPreferredMode("webauthn")));
+                .WithBody(GetResponsePreferredMode("webauthn")));
 
             resp = await privacyIDEA.TriggerChallenges("preferredClientMode");
             Assert.IsNotNull(resp);
@@ -165,7 +165,7 @@ namespace Tests
             .RespondWith(
                 Response.Create()
                 .WithStatusCode(200)
-                .WithBody(GetTCResponseOneWebauthn()));
+                .WithBody(GetResponseSingleWebauthn()));
 
             resp = await privacyIDEA.TriggerChallenges("oneWebauthn");
             Assert.IsNotNull(resp);
@@ -184,7 +184,7 @@ namespace Tests
             .RespondWith(
                 Response.Create()
                 .WithStatusCode(200)
-                .WithBody(GetTCResponseNoWebauthn()));
+                .WithBody(GetResponseNoWebauthn()));
             
              resp = await privacyIDEA.TriggerChallenges("noWebauthn");
              Assert.IsNotNull(resp);
@@ -192,55 +192,6 @@ namespace Tests
         }
 
         // Response utils
-        private static string GetTCBodyWithPreferredMode(string preferredClientMode)
-        {
-            return "{\n" +
-                   "  \"detail\": {\n" +
-                   "    \"attributes\": null,\n" +
-                   "    \"message\": \"Bitte geben Sie einen OTP-Wert ein: , Please confirm the authentication on your mobile device!\",\n" +
-                   "    \"messages\": [\n" +
-                   "      \"Bitte geben Sie einen OTP-Wert ein: \",\n" +
-                   "      \"Please confirm the authentication on your mobile device!\"\n" +
-                   "    ],\n" +
-                   "    \"multi_challenge\": [\n" +
-                   "      {\n" +
-                   "        \"attributes\": null,\n" +
-                   "        \"message\": \"Bitte geben Sie einen OTP-Wert ein: \",\n" +
-                   "        \"serial\": \"OATH00020121\",\n" +
-                   "        \"transaction_id\": \"02659936574063359702\",\n" +
-                   "        \"type\": \"hotp\"\n" +
-                   "      },\n" +
-                   "      {\n" +
-                   "        \"attributes\": null,\n" +
-                   "        \"message\": \"Please confirm the authentication on your mobile device!\",\n" +
-                   "        \"serial\": \"PIPU0001F75E\",\n" +
-                   "        \"transaction_id\": \"02659936574063359702\",\n" +
-                   "        \"type\": \"push\"\n" +
-                   "      }\n" +
-                   "    ],\n" +
-                   "    \"serial\": \"PIPU0001F75E\",\n" +
-                   "    \"preferred_client_mode\": \"" + preferredClientMode + "\",\n" +
-                   "    \"threadid\": 140040525666048,\n" +
-                   "    \"transaction_id\": \"02659936574063359702\",\n" +
-                   "    \"transaction_ids\": [\n" +
-                   "      \"02659936574063359702\",\n" +
-                   "      \"02659936574063359702\"\n" +
-                   "    ],\n" +
-                   "    \"type\": \"push\"\n" +
-                   "  },\n" +
-                   "  \"id\": 1,\n" +
-                   "  \"jsonrpc\": \"2.0\",\n" +
-                   "  \"result\": {\n" +
-                   "    \"status\": true,\n" +
-                   "    \"value\": false\n" +
-                   "  },\n" +
-                   "  \"time\": 1589360175.594304,\n" +
-                   "  \"version\": \"privacyIDEA 3.2.1\",\n" +
-                   "  \"versionnumber\": \"3.2.1\",\n" +
-                   "  \"signature\": \"rsa_sha256_pss:AAAAAAAAAA\"\n" +
-                   "}";
-        }
-
         private static string GetWebAuthnSignRequest1()
         {
             return "{\n" +
@@ -317,41 +268,12 @@ namespace Tests
                 "          }";
         }
 
-        private static string GetPostAuthBody()
+        private static string GetAuthToken()
         {
-            return "{\n" +
-                "    \"id\": 1,\n" +
-                "    \"jsonrpc\": \"2.0\",\n" +
-                "    \"result\": {\n" +
-                "        \"status\": true,\n" +
-                "        \"value\": {\n" +
-                "            \"log_level\": 20,\n" +
-                "            \"menus\": [\n" +
-                "                \"components\",\n" +
-                "                \"machines\"\n" +
-                "            ],\n" +
-                "            \"realm\": \"\",\n" +
-                "            \"rights\": [\n" +
-                "                \"policydelete\",\n" +
-                "                \"resync\"\n" +
-                "            ],\n" +
-                "            \"role\": \"admin\",\n" +
-                "            \"token\": \"" + GetAuthToken() + "\",\n" +
-                "            \"username\": \"admin\",\n" +
-                "            \"logout_time\": 120,\n" +
-                "            \"default_tokentype\": \"hotp\",\n" +
-                "            \"user_details\": false,\n" +
-                "            \"subscription_status\": 0\n" +
-                "        }\n" +
-                "    },\n" +
-                "    \"time\": 1589446794.8502703,\n" +
-                "    \"version\": \"privacyIDEA 3.2.1\",\n" +
-                "    \"versionnumber\": \"3.2.1\",\n" +
-                "    \"signature\": \"rsa_sha256_pss:\"\n" +
-                "}";
+            return "eyJ0eXAiOiJ...KV1QiLC6chGIM";
         }
 
-        private static string GetTCResponse()
+        private static string GetResponseTC()
         {
             return "{\n" +
                 "  \"detail\": {\n" +
@@ -419,10 +341,92 @@ namespace Tests
                 "  \"versionnumber\": \"3.2.1\",\n" +
                 "  \"signature\": \"rsa_sha256_pss:AAAAAAAAAA\"\n" +
                 "}";
+        }
 
+        private static string GetResponsePostAuth()
+        {
+            return "{\n" +
+                "    \"id\": 1,\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"result\": {\n" +
+                "        \"status\": true,\n" +
+                "        \"value\": {\n" +
+                "            \"log_level\": 20,\n" +
+                "            \"menus\": [\n" +
+                "                \"components\",\n" +
+                "                \"machines\"\n" +
+                "            ],\n" +
+                "            \"realm\": \"\",\n" +
+                "            \"rights\": [\n" +
+                "                \"policydelete\",\n" +
+                "                \"resync\"\n" +
+                "            ],\n" +
+                "            \"role\": \"admin\",\n" +
+                "            \"token\": \"" + GetAuthToken() + "\",\n" +
+                "            \"username\": \"admin\",\n" +
+                "            \"logout_time\": 120,\n" +
+                "            \"default_tokentype\": \"hotp\",\n" +
+                "            \"user_details\": false,\n" +
+                "            \"subscription_status\": 0\n" +
+                "        }\n" +
+                "    },\n" +
+                "    \"time\": 1589446794.8502703,\n" +
+                "    \"version\": \"privacyIDEA 3.2.1\",\n" +
+                "    \"versionnumber\": \"3.2.1\",\n" +
+                "    \"signature\": \"rsa_sha256_pss:\"\n" +
+                "}";
+        }
 
-        }            
-        private static string GetTCResponseOneWebauthn()
+        private static string GetResponsePreferredMode(string preferredClientMode)
+        {
+            return "{\n" +
+                   "  \"detail\": {\n" +
+                   "    \"attributes\": null,\n" +
+                   "    \"message\": \"Bitte geben Sie einen OTP-Wert ein: , Please confirm the authentication on your mobile device!\",\n" +
+                   "    \"messages\": [\n" +
+                   "      \"Bitte geben Sie einen OTP-Wert ein: \",\n" +
+                   "      \"Please confirm the authentication on your mobile device!\"\n" +
+                   "    ],\n" +
+                   "    \"multi_challenge\": [\n" +
+                   "      {\n" +
+                   "        \"attributes\": null,\n" +
+                   "        \"message\": \"Bitte geben Sie einen OTP-Wert ein: \",\n" +
+                   "        \"serial\": \"OATH00020121\",\n" +
+                   "        \"transaction_id\": \"02659936574063359702\",\n" +
+                   "        \"type\": \"hotp\"\n" +
+                   "      },\n" +
+                   "      {\n" +
+                   "        \"attributes\": null,\n" +
+                   "        \"message\": \"Please confirm the authentication on your mobile device!\",\n" +
+                   "        \"serial\": \"PIPU0001F75E\",\n" +
+                   "        \"transaction_id\": \"02659936574063359702\",\n" +
+                   "        \"type\": \"push\"\n" +
+                   "      }\n" +
+                   "    ],\n" +
+                   "    \"serial\": \"PIPU0001F75E\",\n" +
+                   "    \"preferred_client_mode\": \"" + preferredClientMode + "\",\n" +
+                   "    \"threadid\": 140040525666048,\n" +
+                   "    \"transaction_id\": \"02659936574063359702\",\n" +
+                   "    \"transaction_ids\": [\n" +
+                   "      \"02659936574063359702\",\n" +
+                   "      \"02659936574063359702\"\n" +
+                   "    ],\n" +
+                   "    \"type\": \"push\"\n" +
+                   "  },\n" +
+                   "  \"id\": 1,\n" +
+                   "  \"jsonrpc\": \"2.0\",\n" +
+                   "  \"result\": {\n" +
+                   "    \"status\": true,\n" +
+                   "    \"value\": false\n" +
+                   "  },\n" +
+                   "  \"time\": 1589360175.594304,\n" +
+                   "  \"version\": \"privacyIDEA 3.2.1\",\n" +
+                   "  \"versionnumber\": \"3.2.1\",\n" +
+                   "  \"signature\": \"rsa_sha256_pss:AAAAAAAAAA\"\n" +
+                   "}";
+        }
+
+        private static string GetResponseSingleWebauthn()
         {
             return "{\n" +
                 "  \"detail\": {\n" +
@@ -481,7 +485,7 @@ namespace Tests
                 "}";
         }
 
-        private static string GetTCResponseNoWebauthn()
+        private static string GetResponseNoWebauthn()
         {
             return "{\n" +
                 "  \"detail\": {\n" +
@@ -527,11 +531,6 @@ namespace Tests
                 "  \"versionnumber\": \"3.2.1\",\n" +
                 "  \"signature\": \"rsa_sha256_pss:AAAAAAAAAA\"\n" +
                 "}";
-        }
-
-        private static string GetAuthToken()
-        {
-            return "eyJ0eXAiOiJ...KV1QiLC6chGIM";
         }
 
         private static string RemoveWhitespaces(string str)
