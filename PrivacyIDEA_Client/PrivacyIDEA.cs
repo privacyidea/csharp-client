@@ -21,17 +21,17 @@ namespace PrivacyIDEA_Client
             }
             set
             {
-                if (SSLVerify != _sslVerify)
+                if (value != _sslVerify)
                 {
                     _httpClientHandler = new HttpClientHandler();
-                    if (SSLVerify is false)
+                    if (value is false)
                     {
                         _httpClientHandler.ClientCertificateOptions = ClientCertificateOption.Manual;
                         _httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
                     }
                     _httpClient = new HttpClient(_httpClientHandler);
                     _httpClient.DefaultRequestHeaders.Add("User-Agent", _userAgent);
-                    _sslVerify = SSLVerify;
+                    _sslVerify = value;
                 }
             } 
         }
