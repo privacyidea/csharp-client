@@ -20,7 +20,7 @@ namespace Tests
         public void Setup()
         {
             server = WireMockServer.Start();
-            privacyIDEA = new PrivacyIDEA(server.Urls[0], "test", false);
+            privacyIDEA = new PrivacyIDEA(server.Urls[0], "test");
         }
 
         [TestCleanup]
@@ -46,6 +46,10 @@ namespace Tests
                     .WithBody(GetResponseSuccess()));
 
             PIResponse? resp = await privacyIDEA.ValidateCheck("testSuccess", "test");
+
+            Assert.IsTrue(privacyIDEA.SSLVerify);
+            privacyIDEA.SSLVerify = false;
+            Assert.IsFalse(privacyIDEA.SSLVerify);
 
             Assert.IsNotNull(resp);
             Assert.IsTrue(resp.Value);
@@ -122,7 +126,7 @@ namespace Tests
                 "\"code\":904," + "\"message\":\"ERR904: The user can not be found in any resolver in this realm!\"}," +
                 "\"status\":false}," + "\"time\":1649752303.65651," + "\"version\":\"privacyIDEA 3.6.3\"," +
                 "\"signature\":\"rsa_sha256_pss:1c64db29cad0dc127d6...5ec143ee52a7804ea1dc8e23ab2fc90ac0ac147c0\"}";
-        }        
+        }
     }
 //Debug.WriteLine("write here a message to debug the tests...");
 }
