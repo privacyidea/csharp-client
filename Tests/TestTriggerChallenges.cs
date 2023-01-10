@@ -32,7 +32,60 @@ namespace Tests
         [TestMethod]
         public async Task TriggerChallenges()
         {
-            // Auth token response
+// Test no service account
+            server.Given(
+                    Request.Create()
+                    .WithPath("/auth")
+                    .UsingPost()
+                    .WithBody("username=admin&password=admin&realm=adminRealm")
+                    .WithHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                    )
+                .RespondWith(
+                    Response.Create()
+                    .WithStatusCode(200)
+                    .WithBody(""));
+            server
+                .Given(
+                    Request.Create()
+                    .WithPath("/validate/triggerchallenge")
+                    .UsingPost()
+                    .WithBody("user=test")
+                    .WithHeader("Authorization", "")
+                    .WithHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                    )
+                .RespondWith(
+                    Response.Create()
+                    .WithStatusCode(200)
+                    .WithBody(GetResponseTC()));
+
+            var resp = await privacyIDEA.TriggerChallenges("test");
+            Assert.IsNull(resp);
+            
+// Test false auth token
+            privacyIDEA.SetServiceAccount("admin", "admin", "adminRealm");
+
+            resp = await privacyIDEA.TriggerChallenges("test");
+            Assert.IsNull(resp);
+
+// Test no token in response
+            server.Given(
+                    Request.Create()
+                    .WithPath("/auth")
+                    .UsingPost()
+                    .WithBody("username=admin&password=admin")
+                    .WithHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                    )
+                .RespondWith(
+                    Response.Create()
+                    .WithStatusCode(200)
+                    .WithBody(GetResponseNoAuthToken()));
+
+            privacyIDEA.SetServiceAccount("admin", "admin");
+
+            resp = await privacyIDEA.TriggerChallenges("test");
+            Assert.IsNull(resp);
+
+// Test trigger challenges full response
             server.Given(
                     Request.Create()
                     .WithPath("/auth")
@@ -45,7 +98,6 @@ namespace Tests
                     .WithStatusCode(200)
                     .WithBody(GetResponsePostAuth()));
 
-            // Trigger challenge response
             server
                 .Given(
                     Request.Create()
@@ -60,9 +112,7 @@ namespace Tests
                     .WithStatusCode(200)
                     .WithBody(GetResponseTC()));
 
-            privacyIDEA.SetServiceAccount("admin", "admin");
-
-            var resp = await privacyIDEA.TriggerChallenges("test");
+            resp = await privacyIDEA.TriggerChallenges("test");
 
             Assert.IsNotNull(resp);
             Assert.AreEqual(false, resp.Value);
@@ -95,7 +145,7 @@ namespace Tests
             Assert.IsFalse(string.IsNullOrEmpty(signRequest));
             Assert.AreEqual(RemoveWhitespaces(GetMergedSignRequests()), RemoveWhitespaces(signRequest));
 
-            // Test preferred_client_mode: push
+// Test preferred_client_mode: push
             server
                 .Given(
                     Request.Create()
@@ -111,10 +161,10 @@ namespace Tests
                     .WithBody(GetResponsePreferredMode("poll")));
 
             resp = await privacyIDEA.TriggerChallenges("testpush");
+            Assert.IsNotNull(resp);
+            Assert.AreEqual("push", resp.PreferredClientMode);
 
-            Assert.IsNotNull(resp); //todo rm
-
-            // Test preferred_client_mode: otp
+// Test preferred_client_mode: otp
             server
             .Given(
                 Request.Create()
@@ -133,7 +183,7 @@ namespace Tests
             Assert.IsNotNull(resp);
             Assert.AreEqual("otp", resp.PreferredClientMode);
 
-            // Test preferred_client_mode: webauthn
+// Test preferred_client_mode: webauthn
             server
             .Given(
                 Request.Create()
@@ -152,7 +202,7 @@ namespace Tests
             Assert.IsNotNull(resp);
             Assert.AreEqual("webauthn", resp.PreferredClientMode);
 
-            // Test one webauthn
+// Test one webauthn
             server
             .Given(
                 Request.Create()
@@ -171,7 +221,7 @@ namespace Tests
             Assert.IsNotNull(resp);
             Assert.AreEqual(RemoveWhitespaces(GetWebAuthnSignRequest1()), resp.MergedSignRequest());
 
-            // Test no webauthn
+// Test no webauthn
             server
             .Given(
                 Request.Create()
@@ -190,7 +240,7 @@ namespace Tests
              Assert.IsNotNull(resp);
              Assert.AreEqual("", resp.MergedSignRequest());
 
-            // Test missing challenge element
+// Test missing challenge element
             server
             .Given(
                 Request.Create()
@@ -207,10 +257,30 @@ namespace Tests
 
             resp = await privacyIDEA.TriggerChallenges("missingElement");
             Assert.IsNotNull(resp);
-            Assert.IsNull(resp.Challenges.Find(item => item.Type == "hotp"));            
+            Assert.IsNull(resp.Challenges.Find(item => item.Type == "hotp"));
+
+// Test auth token false
+            server
+            .Given(
+                Request.Create()
+                .WithPath("/validate/triggerchallenge")
+                .UsingPost()
+                .WithBody("user=missingElement")
+                .WithHeader("Authorization", GetAuthToken())
+                .WithHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                )
+            .RespondWith(
+                Response.Create()
+                .WithStatusCode(200)
+                .WithBody(GetResponseMissingChallengeElement()));
+
+            resp = await privacyIDEA.TriggerChallenges("missingElement");
+            Assert.IsNotNull(resp);
+            Assert.IsNull(resp.Challenges.Find(item => item.Type == "hotp"));
         }
 
-        // Response utils
+        // Response utils vv
+
         private static string GetWebAuthnSignRequest1()
         {
             return "{\n" +
@@ -382,6 +452,39 @@ namespace Tests
                 "            ],\n" +
                 "            \"role\": \"admin\",\n" +
                 "            \"token\": \"" + GetAuthToken() + "\",\n" +
+                "            \"username\": \"admin\",\n" +
+                "            \"logout_time\": 120,\n" +
+                "            \"default_tokentype\": \"hotp\",\n" +
+                "            \"user_details\": false,\n" +
+                "            \"subscription_status\": 0\n" +
+                "        }\n" +
+                "    },\n" +
+                "    \"time\": 1589446794.8502703,\n" +
+                "    \"version\": \"privacyIDEA 3.2.1\",\n" +
+                "    \"versionnumber\": \"3.2.1\",\n" +
+                "    \"signature\": \"rsa_sha256_pss:\"\n" +
+                "}";
+        }        
+        
+        private static string GetResponseNoAuthToken()
+        {
+            return "{\n" +
+                "    \"id\": 1,\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"result\": {\n" +
+                "        \"status\": true,\n" +
+                "        \"value\": {\n" +
+                "            \"log_level\": 20,\n" +
+                "            \"menus\": [\n" +
+                "                \"components\",\n" +
+                "                \"machines\"\n" +
+                "            ],\n" +
+                "            \"realm\": \"\",\n" +
+                "            \"rights\": [\n" +
+                "                \"policydelete\",\n" +
+                "                \"resync\"\n" +
+                "            ],\n" +
+                "            \"role\": \"admin\",\n" +
                 "            \"username\": \"admin\",\n" +
                 "            \"logout_time\": 120,\n" +
                 "            \"default_tokentype\": \"hotp\",\n" +

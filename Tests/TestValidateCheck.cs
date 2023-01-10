@@ -32,12 +32,13 @@ namespace Tests
         [TestMethod]
         public async Task ValidateCheck()
         {
+// Test success
             server
                 .Given(
                     Request.Create()
                     .WithPath("/validate/check")
                     .UsingPost()
-                    .WithBody("user=testSuccess&pass=test")
+                    .WithBody("user=testSuccess&pass=test&transaction_id=123446136254")
                     .WithHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
                     )
                 .RespondWith(
@@ -45,19 +46,17 @@ namespace Tests
                     .WithStatusCode(200)
                     .WithBody(GetResponseSuccess()));
 
-            PIResponse? resp = await privacyIDEA.ValidateCheck("testSuccess", "test");
-
-            Assert.IsTrue(privacyIDEA.SSLVerify);
+            PIResponse? resp = await privacyIDEA.ValidateCheck("testSuccess", "test", "123446136254");
             privacyIDEA.SSLVerify = false;
-            Assert.IsFalse(privacyIDEA.SSLVerify);
 
+            Assert.IsFalse(privacyIDEA.SSLVerify);
             Assert.IsNotNull(resp);
             Assert.IsTrue(resp.Value);
             Assert.IsTrue(resp.Status);
             Assert.AreEqual("totp", resp.Type);
             Assert.AreEqual("PISP0001C673", resp.Serial);
 
-            // Test empty response
+// Test empty response
             server
             .Given(
                 Request.Create()
@@ -75,7 +74,7 @@ namespace Tests
 
             Assert.IsNull(resp);
 
-            // Test PI error
+// Test PI error
             server
             .Given(
                 Request.Create()

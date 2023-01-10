@@ -355,7 +355,11 @@ namespace PrivacyIDEA_Client
         {
             _serviceUser = user;
             _servicePass = pass;
-            if (string.IsNullOrEmpty(realm) is false)
+            if (string.IsNullOrEmpty(realm))
+            {
+                _serviceRealm = "";
+            }
+            else
             {
                 _serviceRealm = realm;
             }
