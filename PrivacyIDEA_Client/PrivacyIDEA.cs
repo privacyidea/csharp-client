@@ -355,14 +355,7 @@ namespace PrivacyIDEA_Client
         {
             _serviceUser = user;
             _servicePass = pass;
-            if (string.IsNullOrEmpty(realm))
-            {
-                _serviceRealm = "";
-            }
-            else
-            {
-                _serviceRealm = realm;
-            }
+            _serviceRealm = realm ?? "";
         }
 
         private Task<string> SendRequest(string endpoint, Dictionary<string, string> parameters, string method,
