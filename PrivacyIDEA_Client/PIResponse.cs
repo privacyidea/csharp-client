@@ -129,7 +129,15 @@ namespace PrivacyIDEA_Client
 
                 if (jobj["detail"] is JToken detail && detail.Type is not JTokenType.Null)
                 {
-                    if ((string?)detail["preferred_client_mode"] is string prefClientMode)
+                    if ((string?)detail["preferred_client_mode"] == "poll")
+                    {
+                        ret.PreferredClientMode = "push";
+                    }
+                    else if ((string?)detail["preferred_client_mode"] == "interactive")
+                    {
+                        ret.PreferredClientMode = "otp";
+                    }
+                    else if ((string?)detail["preferred_client_mode"] is string prefClientMode)
                     {
                         ret.PreferredClientMode = prefClientMode;
                     }

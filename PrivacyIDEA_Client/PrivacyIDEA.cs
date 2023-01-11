@@ -12,28 +12,28 @@ namespace PrivacyIDEA_Client
         public string Realm { get; set; } = "";
         public Dictionary<string, string> RealmMap { get; set; } = new Dictionary<string, string>();
 
-        private bool _SSLVerify = true;
+        private bool _sslVerify = true;
         public bool SSLVerify
         {
             get
             {
-                return _SSLVerify;
+                return _sslVerify;
             }
             set
             {
-                if (SSLVerify != _SSLVerify)
+                if (value != _sslVerify)
                 {
                     _httpClientHandler = new HttpClientHandler();
-                    if (SSLVerify is false)
+                    if (value is false)
                     {
                         _httpClientHandler.ClientCertificateOptions = ClientCertificateOption.Manual;
                         _httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
                     }
                     _httpClient = new HttpClient(_httpClientHandler);
                     _httpClient.DefaultRequestHeaders.Add("User-Agent", _userAgent);
-                    _SSLVerify = SSLVerify;
+                    _sslVerify = value;
                 }
-            }
+            } 
         }
 
         private HttpClientHandler _httpClientHandler;
@@ -53,10 +53,10 @@ namespace PrivacyIDEA_Client
         private static readonly List<String> _logExcludedEndpoints = new(new string[]
            { "/auth", "/validate/polltransaction" });
 
-        public PrivacyIDEA(string url, string useragent, bool sslVerify = true)
+        public PrivacyIDEA(string url, string userAgent, bool sslVerify = true)
         {
             this.Url = url;
-            this._userAgent = useragent;
+            this._userAgent = userAgent;
 
             _httpClientHandler = new HttpClientHandler();
             if (sslVerify is false)
@@ -65,7 +65,7 @@ namespace PrivacyIDEA_Client
                 _httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             }
             _httpClient = new HttpClient(_httpClientHandler);
-            _httpClient.DefaultRequestHeaders.Add("User-Agent", useragent);
+            _httpClient.DefaultRequestHeaders.Add("User-Agent", userAgent);
         }
 
         /// <summary>
@@ -355,10 +355,7 @@ namespace PrivacyIDEA_Client
         {
             _serviceUser = user;
             _servicePass = pass;
-            if (string.IsNullOrEmpty(realm) is false)
-            {
-                _serviceRealm = realm;
-            }
+            _serviceRealm = realm ?? "";
         }
 
         private Task<string> SendRequest(string endpoint, Dictionary<string, string> parameters, string method,
