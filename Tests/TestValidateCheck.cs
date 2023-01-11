@@ -1,10 +1,9 @@
-﻿using System;
-using System.Diagnostics;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PrivacyIDEA_Client;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
+using PrivacyIDEA_TestUtils;
 
 namespace Tests
 {
@@ -20,7 +19,7 @@ namespace Tests
         public void Setup()
         {
             server = WireMockServer.Start();
-            privacyIDEA = new PrivacyIDEA(server.Urls[0], "test");
+            privacyIDEA = new PrivacyIDEA(server.Urls[0], "test", false);
         }
 
         [TestCleanup]
@@ -30,21 +29,20 @@ namespace Tests
         }
 
         [TestMethod]
-        public async Task ValidateCheck()
+        public async Task TestSuccess()
         {
-// Test success
             server
-                .Given(
-                    Request.Create()
-                    .WithPath("/validate/check")
-                    .UsingPost()
-                    .WithBody("user=testSuccess&pass=test&transaction_id=123446136254")
-                    .WithHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
-                    )
-                .RespondWith(
-                    Response.Create()
-                    .WithStatusCode(200)
-                    .WithBody(GetResponseSuccess()));
+            .Given(
+               Request.Create()
+               .WithPath("/validate/check")
+               .UsingPost()
+               .WithBody("user=testSuccess&pass=test&transaction_id=123446136254")
+               .WithHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+               )
+    .       RespondWith(
+               Response.Create()
+               .WithStatusCode(200)
+               .WithBody(TestUtils.VCResponseSuccess()));
 
             PIResponse? resp = await privacyIDEA.ValidateCheck("testSuccess", "test", "123446136254");
             privacyIDEA.SSLVerify = false;
@@ -54,78 +52,51 @@ namespace Tests
             Assert.IsTrue(resp.Value);
             Assert.IsTrue(resp.Status);
             Assert.AreEqual("totp", resp.Type);
-            Assert.AreEqual("PISP0001C673", resp.Serial);
+            Assert.AreEqual("PISP0001C673", resp.Serial); 
+        }
 
-// Test empty response
+        [TestMethod]
+        public async Task TestEmptyResponse()
+        {
             server
             .Given(
                 Request.Create()
                 .WithPath("/validate/check")
                 .UsingPost()
-                .WithBody("user=emptyResponse&pass=test")
-                .WithHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                .WithBody("user=emptyResponse&pass=test&realm=testrealm")
                 )
             .RespondWith(
                 Response.Create()
                 .WithStatusCode(200)
                 .WithBody(""));
 
-            resp = await privacyIDEA.ValidateCheck("emptyResponse", "test");
+            privacyIDEA.Realm = "testrealm";
+            var resp = await privacyIDEA.ValidateCheck("emptyResponse", "test");
+            privacyIDEA.Dispose();
 
             Assert.IsNull(resp);
+        }
 
-// Test PI error
+        [TestMethod]
+        public async Task TestPIError()
+        {
             server
             .Given(
                 Request.Create()
                 .WithPath("/validate/check")
                 .UsingPost()
                 .WithBody("user=testError&pass=test")
-                .WithHeader("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
                 )
             .RespondWith(
                 Response.Create()
                 .WithStatusCode(200)
-                .WithBody(GetResponseErrorCode()));
+                .WithBody(TestUtils.VCResponseErrorCode()));
 
-            resp = await privacyIDEA.ValidateCheck("testError", "test");
+            var resp = await privacyIDEA.ValidateCheck("testError", "test");
 
             Assert.IsNotNull(resp);
             Assert.AreEqual(904, resp.ErrorCode);
             Assert.AreEqual("ERR904: The user can not be found in any resolver in this realm!", resp.ErrorMessage);
         }
-
-        private static string GetResponseSuccess()
-        {
-            return "{\n" +
-                "\"detail\":" +
-                " {\n" +
-                    "\"message\": \"matching 1 tokens\",\n" +
-                    "\"otplen\": 6,\n" +
-                    "\"serial\": \"PISP0001C673\",\n" +
-                    "\"threadid\": 140536383567616,\n" +
-                    "\"type\": \"totp\"\n" +
-                "},\n" +
-                "\"id\": 1,\n" +
-                "\"jsonrpc\": \"2.0\",\n" +
-                "\"result\": " +
-                "{\n" +
-                    "\"status\": true,\n" +
-                    "\"value\": true\n" +
-                "},\n" +
-                "\"time\": 1589276995.4397042,\n" +
-                "\"version\": \"privacyIDEA 3.2.1\",\n" +
-                "\"versionnumber\": \"3.2.1\",\n" +
-                "\"signature\": \"rsa_sha256_pss:AAAAAAAAAAA\"}";
-        }
-
-        private static string GetResponseErrorCode()
-        {
-            return "{" + "\"detail\":null," + "\"id\":1," + "\"jsonrpc\":\"2.0\"," + "\"result\":{" + "\"error\":{" +
-                "\"code\":904," + "\"message\":\"ERR904: The user can not be found in any resolver in this realm!\"}," +
-                "\"status\":false}," + "\"time\":1649752303.65651," + "\"version\":\"privacyIDEA 3.6.3\"," +
-                "\"signature\":\"rsa_sha256_pss:1c64db29cad0dc127d6...5ec143ee52a7804ea1dc8e23ab2fc90ac0ac147c0\"}";
-        }
     }
-//Debug.WriteLine("write here a message to debug the tests...");
 }
