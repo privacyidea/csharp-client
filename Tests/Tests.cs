@@ -218,7 +218,6 @@ namespace Tests
                                 "  \"detail\": {\n" +
                                 "    \"preferred_client_mode\": \"push\",\n" +
                                 "    \"attributes\": null,\n" +
-                                "    \"image\": \"imgdata123ß0i194021123\",\n" +
                                 "    \"message\": \"Bitte geben Sie einen OTP-Wert ein: , Please confirm the authentication on your mobile device!\",\n" +
                                 "    \"messages\": [\n" +
                                 "      \"Bitte geben Sie einen OTP-Wert ein: \",\n" +
@@ -292,7 +291,6 @@ namespace Tests
             Assert.AreEqual(true, resp.Status);
             Assert.AreEqual("02659936574063359702", resp.TransactionID);
             Assert.AreEqual("push", resp.PreferredClientMode);
-            Assert.AreEqual("imgdata123ß0i194021123", resp.Image);
             Assert.AreEqual("Bitte geben Sie einen OTP-Wert ein: , Please confirm the authentication on your mobile device!", resp.Message);
 
             Assert.IsTrue(resp.TriggeredTokenTypes().Contains("push"));
@@ -311,7 +309,6 @@ namespace Tests
 
             var c3 = resp.Challenges.Find(item => item.Type == "webauthn");
             Assert.AreEqual("WAN00025CE7", c3.Serial);
-            Assert.AreEqual("static/img/FIDO-U2F-Security-Key-444x444.png", c3.Img);
             Assert.AreEqual("Please confirm with your WebAuthn token (Yubico U2F EE Serial 61730834)", c3.Message);
             var signRequest = resp.MergedSignRequest();
             Assert.IsFalse(string.IsNullOrEmpty(signRequest));
