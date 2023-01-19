@@ -154,9 +154,12 @@ namespace PrivacyIDEA_Client
                     {
                         foreach (JToken element in multiChallenge.Children())
                         {
+                            if ((string?)element["image"] is string img)
+                            {
+                                string chalImage = img;
+                            }
                             if ((string?)element["message"] is string chalMessage && (string?)element["transaction_id"] is string chalTransactionID
-                                && (string?)element["type"] is string chalType && (string?)element["image"] is string chalImage
-                                && (string?)element["serial"] is string chalSerial)
+                                && (string?)element["type"] is string chalType && (string?)element["serial"] is string chalSerial)
                             {
                                 if (chalType == "webauthn")
                                 {
@@ -176,7 +179,6 @@ namespace PrivacyIDEA_Client
                                     tmp.Serial = chalSerial;
                                     tmp.TransactionID = chalTransactionID;
                                     tmp.Type = chalType;
-                                    tmp.Image = chalImage;
                                     ret.Challenges.Add(tmp);
                                 }
                                 else
