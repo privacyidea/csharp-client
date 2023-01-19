@@ -7,7 +7,6 @@ namespace PrivacyIDEA_Client
     {
         public string TransactionID { get; set; } = "";
         public string Message { get; set; } = "";
-        public string Image { get; set; } = "";
         public string PreferredClientMode { get; set; } = "";
         public string? ErrorMessage { get; set; } = "";
         public string Type { get; set; } = "";
@@ -142,10 +141,6 @@ namespace PrivacyIDEA_Client
                     {
                         ret.Message = message;
                     }
-                    if ((string?)detail["image"] is string image)
-                    {
-                        ret.Image = image;
-                    }
                     if ((string?)detail["type"] is string type)
                     {
                         ret.Type = type;
@@ -160,7 +155,8 @@ namespace PrivacyIDEA_Client
                         foreach (JToken element in multiChallenge.Children())
                         {
                             if ((string?)element["message"] is string chalMessage && (string?)element["transaction_id"] is string chalTransactionID
-                                && (string?)element["type"] is string chalType && (string?)element["serial"] is string chalSerial)
+                                && (string?)element["type"] is string chalType && (string?)element["image"] is string chalImage
+                                && (string?)element["serial"] is string chalSerial)
                             {
                                 if (chalType == "webauthn")
                                 {
@@ -168,11 +164,6 @@ namespace PrivacyIDEA_Client
 
                                     if (element["attributes"] is JToken attr && attr.Type is not JTokenType.Null)
                                     {
-                                        if (attr["img"] is JToken img && img.Type is not JTokenType.Null)
-                                        {
-                                            tmp.Img = img.ToString();
-                                        }
-
                                         var signRequest = attr["webAuthnSignRequest"];
                                         if (signRequest is not null)
                                         {
@@ -185,6 +176,7 @@ namespace PrivacyIDEA_Client
                                     tmp.Serial = chalSerial;
                                     tmp.TransactionID = chalTransactionID;
                                     tmp.Type = chalType;
+                                    tmp.Image = chalImage;
                                     ret.Challenges.Add(tmp);
                                 }
                                 else
