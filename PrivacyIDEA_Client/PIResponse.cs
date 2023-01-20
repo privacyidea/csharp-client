@@ -192,7 +192,7 @@ namespace PrivacyIDEA_Client
                                         Message = chalMessage,
                                         Serial = chalSerial,
                                         TransactionID = chalTransactionID,
-                                        tmp.ClientMode = chalClientMode;
+                                        ClientMode = chalClientMode,
                                         WebAuthnSignRequest = webAuthnSignRequest,
                                         Type = chalType,
                                     };
