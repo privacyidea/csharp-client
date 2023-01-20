@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace PrivacyIDEA_Client
+﻿namespace PrivacyIDEA_Client
 {
     public class PIChallenge
     {
@@ -8,6 +6,7 @@ namespace PrivacyIDEA_Client
         public string Message { get; set; } = "";
         public string TransactionID { get; set; } = "";
         public string Type { get; set; } = "";
+        public string Image { get; set; } = "";
         public Dictionary<string, object> Attributes { get; set; } = new Dictionary<string, object>();
     }
 }
