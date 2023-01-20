@@ -160,7 +160,6 @@ namespace PrivacyIDEA_Client
                                 chalImage = img;
                             }
                             if ((string?)element["message"] is string chalMessage 
-                                && (string?)element["client_mode"] is string chalClientMode
                                 && (string?)element["transaction_id"] is string chalTransactionID
                                 && (string?)element["type"] is string chalType 
                                 && (string?)element["serial"] is string chalSerial)
@@ -182,7 +181,6 @@ namespace PrivacyIDEA_Client
                                     {
                                         Image = chalImage,
                                         Message = chalMessage,
-                                        ClientMode = chalClientMode,
                                         Serial = chalSerial,
                                         TransactionID = chalTransactionID,
                                         WebAuthnSignRequest = webAuthnSignRequest,
@@ -196,7 +194,6 @@ namespace PrivacyIDEA_Client
                                     {
                                         Message = chalMessage,
                                         Serial = chalSerial,
-                                        ClientMode = chalClientMode,
                                         Image = chalImage,
                                         TransactionID = chalTransactionID,
                                         Type = chalType
