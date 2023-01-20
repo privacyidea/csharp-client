@@ -154,31 +154,40 @@ namespace PrivacyIDEA_Client
                     {
                         foreach (JToken element in multiChallenge.Children())
                         {
+                            string chalImage = "";
                             if ((string?)element["image"] is string img)
                             {
-                                string chalImage = img;
+                                chalImage = img;
                             }
-                            if ((string?)element["message"] is string chalMessage && (string?)element["transaction_id"] is string chalTransactionID
-                                && (string?)element["type"] is string chalType && (string?)element["serial"] is string chalSerial)
+                            if ((string?)element["message"] is string chalMessage 
+                                && (string?)element["client_mode"] is string chalClientMode
+                                && (string?)element["transaction_id"] is string chalTransactionID
+                                && (string?)element["type"] is string chalType 
+                                && (string?)element["serial"] is string chalSerial)
                             {
                                 if (chalType == "webauthn")
                                 {
-                                    PIWebAuthnSignRequest tmp = new();
-
+                                    string webAuthnSignRequest = "";
                                     if (element["attributes"] is JToken attr && attr.Type is not JTokenType.Null)
                                     {
                                         var signRequest = attr["webAuthnSignRequest"];
                                         if (signRequest is not null)
                                         {
-                                            tmp.WebAuthnSignRequest = signRequest.ToString(Formatting.None);
-                                            _ = tmp.WebAuthnSignRequest.Replace("\n", "");
+                                            webAuthnSignRequest = signRequest.ToString(Formatting.None)
+                                                                                 .Replace("\n", "");
                                         }
                                     }
 
-                                    tmp.Message = chalMessage;
-                                    tmp.Serial = chalSerial;
-                                    tmp.TransactionID = chalTransactionID;
-                                    tmp.Type = chalType;
+                                    PIWebAuthnSignRequest tmp = new()
+                                    {
+                                        Image = chalImage,
+                                        Message = chalMessage,
+                                        ClientMode = chalClientMode,
+                                        Serial = chalSerial,
+                                        TransactionID = chalTransactionID,
+                                        WebAuthnSignRequest = webAuthnSignRequest,
+                                        Type = chalType,
+                                    };
                                     ret.Challenges.Add(tmp);
                                 }
                                 else
@@ -187,6 +196,8 @@ namespace PrivacyIDEA_Client
                                     {
                                         Message = chalMessage,
                                         Serial = chalSerial,
+                                        ClientMode = chalClientMode,
+                                        Image = chalImage,
                                         TransactionID = chalTransactionID,
                                         Type = chalType
                                     };
