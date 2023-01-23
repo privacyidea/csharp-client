@@ -73,18 +73,21 @@ namespace Tests
             PIChallenge? c1 = resp.Challenges.Find(item => item.Type == "push");
             Assert.IsNotNull(c1);
             Assert.AreEqual("PIPU0001F75E", c1.Serial);
+            Assert.AreEqual("poll", c1.ClientMode);
             Assert.AreEqual("Please confirm the authentication on your mobile device!", c1.Message);
             Assert.AreEqual(c1.Attributes.Count, 0);
 
             PIChallenge? c2 = resp.Challenges.Find(item => item.Type == "hotp");
             Assert.IsNotNull(c2);
             Assert.AreEqual("OATH00020121", c2.Serial);
+            Assert.AreEqual("interactive", c2.ClientMode);
             Assert.AreEqual("Bitte geben Sie einen OTP-Wert ein: ", c2.Message);
             Assert.AreEqual(c2.Attributes.Count, 0);
 
             PIChallenge? c3 = resp.Challenges.Find(item => item.Type == "webauthn");
             Assert.IsNotNull(c3);
             Assert.AreEqual("WAN00025CE7", c3.Serial);
+            Assert.AreEqual("webauthn", c3.ClientMode);
             Assert.AreEqual("Please confirm with your WebAuthn token (Yubico U2F EE Serial 61730834)", c3.Message);
             Assert.AreEqual(c3.Attributes.Count, 0);
 

@@ -169,6 +169,7 @@ namespace PrivacyIDEA_Client
                             }
                             if ((string?)element["message"] is string chalMessage 
                                 && (string?)element["transaction_id"] is string chalTransactionID
+                                && (string?)element["client_mode"] is string chalClientMode
                                 && (string?)element["type"] is string chalType 
                                 && (string?)element["serial"] is string chalSerial)
                             {
@@ -191,6 +192,7 @@ namespace PrivacyIDEA_Client
                                         Message = chalMessage,
                                         Serial = chalSerial,
                                         TransactionID = chalTransactionID,
+                                        ClientMode = chalClientMode,
                                         WebAuthnSignRequest = webAuthnSignRequest,
                                         Type = chalType,
                                     };
@@ -204,6 +206,7 @@ namespace PrivacyIDEA_Client
                                         Serial = chalSerial,
                                         Image = chalImage,
                                         TransactionID = chalTransactionID,
+                                        ClientMode = chalClientMode,
                                         Type = chalType
                                     };
                                     ret.Challenges.Add(tmp);

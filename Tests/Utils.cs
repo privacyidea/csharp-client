@@ -130,6 +130,7 @@
                 "        \"attributes\": null,\n" +
                 "        \"message\": \"Bitte geben Sie einen OTP-Wert ein: \",\n" +
                 "        \"serial\": \"OATH00020121\",\n" +
+                "        \"client_mode\": \"interactive\",\n" +
                 "        \"transaction_id\": \"02659936574063359702\",\n" +
                 "        \"type\": \"hotp\"\n" +
                 "      },\n" +
@@ -137,6 +138,7 @@
                 "        \"attributes\": null,\n" +
                 "        \"message\": \"Please confirm the authentication on your mobile device!\",\n" +
                 "        \"serial\": \"PIPU0001F75E\",\n" +
+                "        \"client_mode\": \"poll\",\n" +
                 "        \"transaction_id\": \"02659936574063359702\",\n" +
                 "        \"type\": \"push\"\n" +
                 "      },\n" +
@@ -148,6 +150,7 @@
                 "        },\n" +
                 "        \"message\": \"Please confirm with your WebAuthn token (Yubico U2F EE Serial 61730834)\",\n" +
                 "        \"serial\": \"WAN00025CE7\",\n" +
+                "        \"client_mode\": \"webauthn\",\n" +
                 "        \"transaction_id\": \"16786665691788289392\",\n" +
                 "        \"type\": \"webauthn\"\n" +
                 "      },\n" +
@@ -159,6 +162,7 @@
                 "        },\n" +
                 "        \"message\": \"Please confirm with your WebAuthn token (Yubico U2F EE Serial 6173234565)\",\n" +
                 "        \"serial\": \"WAN0002TER\",\n" +
+                "        \"client_mode\": \"webauthn\",\n" +
                 "        \"transaction_id\": \"16786665691788289392\",\n" +
                 "        \"type\": \"webauthn\"\n" +
                 "      }\n" +
@@ -267,6 +271,7 @@
                    "        \"attributes\": null,\n" +
                    "        \"message\": \"Bitte geben Sie einen OTP-Wert ein: \",\n" +
                    "        \"serial\": \"OATH00020121\",\n" +
+                   "        \"client_mode\": \"interactive\",\n" +
                    "        \"transaction_id\": \"02659936574063359702\",\n" +
                    "        \"type\": \"hotp\"\n" +
                    "      },\n" +
@@ -274,6 +279,7 @@
                    "        \"attributes\": null,\n" +
                    "        \"message\": \"Please confirm the authentication on your mobile device!\",\n" +
                    "        \"serial\": \"PIPU0001F75E\",\n" +
+                   "        \"client_mode\": \"poll\",\n" +
                    "        \"transaction_id\": \"02659936574063359702\",\n" +
                    "        \"type\": \"push\"\n" +
                    "      }\n" +
@@ -316,6 +322,7 @@
                 "        \"attributes\": null,\n" +
                 "        \"message\": \"Bitte geben Sie einen OTP-Wert ein: \",\n" +
                 "        \"serial\": \"OATH00020121\",\n" +
+                "        \"client_mode\": \"interactive\",\n" +
                 "        \"transaction_id\": \"02659936574063359702\",\n" +
                 "        \"type\": \"hotp\"\n" +
                 "      },\n" +
@@ -323,6 +330,7 @@
                 "        \"attributes\": null,\n" +
                 "        \"message\": \"Please confirm the authentication on your mobile device!\",\n" +
                 "        \"serial\": \"PIPU0001F75E\",\n" +
+                "        \"client_mode\": \"poll\",\n" +
                 "        \"transaction_id\": \"02659936574063359702\",\n" +
                 "        \"type\": \"push\"\n" +
                 "      },\n" +
@@ -334,6 +342,7 @@
                 "        },\n" +
                 "        \"message\": \"Please confirm with your WebAuthn token (Yubico U2F EE Serial 6173234565)\",\n" +
                 "        \"serial\": \"WAN0002TER\",\n" +
+                "        \"client_mode\": \"webauthn\",\n" +
                 "        \"transaction_id\": \"16786665691788289392\",\n" +
                 "        \"type\": \"webauthn\"\n" +
                 "      }\n" +
@@ -375,6 +384,7 @@
                 "        \"attributes\": null,\n" +
                 "        \"message\": \"Bitte geben Sie einen OTP-Wert ein: \",\n" +
                 "        \"serial\": \"OATH00020121\",\n" +
+                "        \"client_mode\": \"interactive\",\n" +
                 "        \"transaction_id\": \"02659936574063359702\",\n" +
                 "        \"type\": \"hotp\"\n" +
                 "      },\n" +
@@ -382,6 +392,7 @@
                 "        \"attributes\": null,\n" +
                 "        \"message\": \"Please confirm the authentication on your mobile device!\",\n" +
                 "        \"serial\": \"PIPU0001F75E\",\n" +
+                "        \"client_mode\": \"poll\",\n" +
                 "        \"transaction_id\": \"02659936574063359702\",\n" +
                 "        \"type\": \"push\"\n" +
                 "      }\n" +
@@ -422,6 +433,7 @@
                 "      {\n" +
                 "        \"attributes\": null,\n" +
                 "        \"serial\": \"OATH00020121\",\n" +
+                "        \"client_mode\": \"interactive\",\n" +
                 "        \"transaction_id\": \"02659936574063359702\",\n" +
                 "        \"type\": \"hotp\"\n" +
                 "      }\n" +
