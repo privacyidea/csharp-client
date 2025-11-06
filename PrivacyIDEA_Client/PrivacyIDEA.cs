@@ -78,7 +78,7 @@ namespace PrivacyIDEA_Client
         /// <param name="clientUserAgent">optional client user agent from header to forward to the privacyIDEA</param>
         /// <param name="cancellationToken">optional</param>
         /// <returns>PIResponse object or null on error</returns>
-        public async Task<PIResponse?> TriggerChallenges(string username, string? domain = null, List<KeyValuePair<string, string>>? headers = null, CancellationToken cancellationToken = default, string? clientIP = null, string? clientUserAgent = null)
+        public async Task<PIResponse?> TriggerChallenges(string username, string? domain = null, List<KeyValuePair<string, string>>? headers = null, string? clientIP = null, string? clientUserAgent = null, CancellationToken cancellationToken = default)
         {
             if (await GetAuthToken(cancellationToken) is false)
             {
@@ -103,11 +103,11 @@ namespace PrivacyIDEA_Client
         /// Check if the challenge for the given transaction id has been answered yet. This is done using the /validate/polltransaction endpoint.
         /// </summary>
         /// <param name="transactionid"></param>
-        /// <param name="cancellationToken">optional</param>
         /// <param name="clientIP">optional client IP to forward to privacyIDEA</param>
         /// <param name="clientUserAgent">optional client user agent from header to forward to the privacyIDEA</param>
+        /// <param name="cancellationToken">optional</param>
         /// <returns>true if challenge was answered. false if not or error</returns>
-        public async Task<bool> PollTransaction(string transactionid, CancellationToken cancellationToken = default, string? clientIP = null, string? clientUserAgent = null)
+        public async Task<bool> PollTransaction(string transactionid, string? clientIP = null, string? clientUserAgent = null, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(transactionid) is false)
             {
@@ -143,11 +143,11 @@ namespace PrivacyIDEA_Client
         /// </summary>
         /// <param name="user">username</param>
         /// <param name="domain">optional domain which can be mapped to a privacyIDEA realm</param>
-        /// <param name="cancellationToken">optional</param>
         /// <param name="clientIP">optional client IP to forward to privacyIDEA</param>
         /// <param name="clientUserAgent">optional client user agent from header to forward to the privacyIDEA</param>
+        /// <param name="cancellationToken">optional</param>
         /// <returns>true if token exists. false if not or error</returns>
-        public async Task<bool> UserHasToken(string user, string? domain = null, CancellationToken cancellationToken = default, string? clientIP = null, string? clientUserAgent = null)
+        public async Task<bool> UserHasToken(string user, string? domain = null, string? clientIP = null, string? clientUserAgent = null, CancellationToken cancellationToken = default)
         {
             if (await GetAuthToken(cancellationToken) is false)
             {
@@ -183,11 +183,11 @@ namespace PrivacyIDEA_Client
         /// </summary>
         /// <param name="user">username</param>
         /// <param name="domain">optional domain which can be mapped to a privacyIDEA realm</param>
-        /// <param name="cancellationToken">optional</param>
         /// <param name="clientIP">optional client IP to forward to privacyIDEA</param>
         /// <param name="clientUserAgent">optional client user agent from header to forward to the privacyIDEA</param>
+        /// <param name="cancellationToken">optional</param>
         /// <returns>PIEnrollResponse object or null on error</returns>
-        public async Task<PIEnrollResponse?> TokenInit(string user, string? domain = null, CancellationToken cancellationToken = default, string? clientIP = null, string? clientUserAgent = null)
+        public async Task<PIEnrollResponse?> TokenInit(string user, string? domain = null, string? clientIP = null, string? clientUserAgent = null, CancellationToken cancellationToken = default)
         {
             var parameters = new Dictionary<string, string>
             {
@@ -212,11 +212,11 @@ namespace PrivacyIDEA_Client
         /// <param name="transactionid">optional transaction id to refer to a challenge</param>
         /// <param name="domain">optional domain which can be mapped to a privacyIDEA realm</param>
         /// <param name="headers">optional headers which can be forwarded to the privacyIDEA server</param>
-        /// <param name="cancellationToken">optional</param>
         /// <param name="clientIP">optional client IP to forward to privacyIDEA</param>
         /// <param name="clientUserAgent">optional client user agent from header to forward to the privacyIDEA</param>
+        /// <param name="cancellationToken">optional</param>
         /// <returns>PIResponse object or null on error</returns>
-        public async Task<PIResponse?> ValidateCheck(string user, string otp, string? transactionid = null, string? domain = null, List<KeyValuePair<string, string>>? headers = null, CancellationToken cancellationToken = default, string? clientIP = null, string? clientUserAgent = null)
+        public async Task<PIResponse?> ValidateCheck(string user, string otp, string? transactionid = null, string? domain = null, List<KeyValuePair<string, string>>? headers = null, string? clientIP = null, string? clientUserAgent = null, CancellationToken cancellationToken = default)
         {
             var parameters = new Dictionary<string, string>
             {
@@ -246,11 +246,11 @@ namespace PrivacyIDEA_Client
         /// <param name="origin">origin also returned by the browser</param>
         /// <param name="domain">optional domain which can be mapped to a privacyIDEA realm</param>
         /// <param name="headers">optional headers which can be forwarded to the privacyIDEA server</param>
-        /// <param name="cancellationToken">optional</param>
         /// <param name="clientIP">optional client IP to forward to privacyIDEA</param>
         /// <param name="clientUserAgent">optional client user agent from header to forward to the privacyIDEA</param>
+        /// <param name="cancellationToken">optional</param>
         /// <returns>PIResponse object or null on error</returns>
-        public async Task<PIResponse?> ValidateCheckWebAuthn(string user, string transactionID, string webAuthnSignResponse, string origin, string? domain = null, List<KeyValuePair<string, string>>? headers = null, CancellationToken cancellationToken = default, string? clientIP = null, string? clientUserAgent = null)
+        public async Task<PIResponse?> ValidateCheckWebAuthn(string user, string transactionID, string webAuthnSignResponse, string origin, string? domain = null, List<KeyValuePair<string, string>>? headers = null, string? clientIP = null, string? clientUserAgent = null, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(transactionID) || string.IsNullOrEmpty(webAuthnSignResponse) || string.IsNullOrEmpty(origin))
             {
@@ -316,11 +316,11 @@ namespace PrivacyIDEA_Client
         /// Gets an auth token from the privacyIDEA server using the service account.
         /// Afterward, the token is set as the default authentication header for the HttpClient.
         /// </summary>
-        /// <param name="cancellationToken">optional</param>
         /// <param name="clientIP">optional client IP to forward to privacyIDEA</param>
         /// <param name="clientUserAgent">optional client user agent from header to forward to the privacyIDEA</param>
+        /// <param name="cancellationToken">optional</param>
         /// <returns>true if success, false otherwise</returns>
-        private async Task<bool> GetAuthToken(CancellationToken cancellationToken = default, string? clientIP = null, string? clientUserAgent = null)
+        private async Task<bool> GetAuthToken(, string? clientIP = null, string? clientUserAgent = null, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(_serviceUser) || string.IsNullOrEmpty(_servicePass))
             {
