@@ -505,7 +505,7 @@ namespace PrivacyIDEA_Client
         {
             if (string.IsNullOrEmpty(clientIP) is false)
             {
-                parameters.Add("client", clientIP!);
+                parameters.Add("client", clientIP);
             }
             if (string.IsNullOrEmpty(clientUserAgent) is false)
             {
