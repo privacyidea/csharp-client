@@ -509,7 +509,7 @@ namespace PrivacyIDEA_Client
             }
             if (string.IsNullOrEmpty(clientUserAgent) is false)
             {
-                parameters.Add("client_user_agent", clientUserAgent!);
+                parameters.Add("client_user_agent", clientUserAgent);
             }
         }
 
