@@ -74,12 +74,12 @@ namespace PrivacyIDEA_Client
         /// <param name="username">username to trigger challenges for</param>
         /// <param name="domain">optional domain which can be mapped to a privacyIDEA realm</param>
         /// <param name="headers">optional headers which can be forwarded to the privacyIDEA server</param>
-        /// <param name="customAttributes">optional custom attributes to include</param>
+        /// <param name="customParameters">optional custom parameters to include</param>
         /// <param name="cancellationToken">optional</param>
         /// <returns>PIResponse object or null on error</returns>
-        public async Task<PIResponse?> TriggerChallenges(string username, string? domain = null, List<KeyValuePair<string, string>>? headers = null, Dictionary<string, string>? customAttributes = null, CancellationToken cancellationToken = default)
+        public async Task<PIResponse?> TriggerChallenges(string username, string? domain = null, List<KeyValuePair<string, string>>? headers = null, Dictionary<string, string>? customParameters = null, CancellationToken cancellationToken = default)
         {
-            if (await GetAuthToken(customAttributes, cancellationToken) is false)
+            if (await GetAuthToken(customParameters, cancellationToken) is false)
             {
                 Error("Unable to trigger challenges without an auth token!");
                 return null;
@@ -90,7 +90,7 @@ namespace PrivacyIDEA_Client
             };
 
             AddRealmForDomain(domain, parameters);
-            AddCustomAttributes(customAttributes, parameters);
+            AddCustomParameters(customParameters, parameters);
 
             string response = await SendRequest("/validate/triggerchallenge", parameters, "POST", headers, cancellationToken);
             PIResponse? ret = PIResponse.FromJSON(response, this);
@@ -102,10 +102,10 @@ namespace PrivacyIDEA_Client
         /// Check if the challenge for the given transaction id has been answered yet. This is done using the /validate/polltransaction endpoint.
         /// </summary>
         /// <param name="transactionid"></param>
-        /// <param name="customAttributes">optional custom attributes to include</param>
+        /// <param name="customParameters">optional custom parameters to include</param>
         /// <param name="cancellationToken">optional</param>
         /// <returns>true if challenge was answered. false if not or error</returns>
-        public async Task<bool> PollTransaction(string transactionid, Dictionary<string, string>? customAttributes = null, CancellationToken cancellationToken = default)
+        public async Task<bool> PollTransaction(string transactionid, Dictionary<string, string>? customParameters = null, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(transactionid) is false)
             {
@@ -113,7 +113,7 @@ namespace PrivacyIDEA_Client
                 {
                     { "transaction_id", transactionid }
                 };
-                AddCustomAttributes(customAttributes, parameters);
+                AddCustomParameters(customParameters, parameters);
 
                 string response = await SendRequest("/validate/polltransaction", parameters, "GET", new List<KeyValuePair<string, string>>(), cancellationToken);
 
@@ -141,12 +141,12 @@ namespace PrivacyIDEA_Client
         /// </summary>
         /// <param name="user">username</param>
         /// <param name="domain">optional domain which can be mapped to a privacyIDEA realm</param>
-        /// <param name="customAttributes">optional custom attributes to include</param>
+        /// <param name="customParameters">optional custom parameters to include</param>
         /// <param name="cancellationToken">optional</param>
         /// <returns>true if token exists. false if not or error</returns>
-        public async Task<bool> UserHasToken(string user, string? domain = null, Dictionary<string, string>? customAttributes = null, CancellationToken cancellationToken = default)
+        public async Task<bool> UserHasToken(string user, string? domain = null, Dictionary<string, string>? customParameters = null, CancellationToken cancellationToken = default)
         {
-            if (await GetAuthToken(customAttributes, cancellationToken) is false)
+            if (await GetAuthToken(customParameters, cancellationToken) is false)
             {
                 Error("Unable to lookup tokens without an auth token!");
                 return false;
@@ -156,7 +156,7 @@ namespace PrivacyIDEA_Client
                 { "user", user }
             };
             AddRealmForDomain(domain, parameters);
-            AddCustomAttributes(customAttributes, parameters);
+            AddCustomParameters(customParameters, parameters);
 
             string response = await SendRequest("/token/", parameters, "GET", new List<KeyValuePair<string, string>>(), cancellationToken);
             if (string.IsNullOrEmpty(response))
@@ -180,10 +180,10 @@ namespace PrivacyIDEA_Client
         /// </summary>
         /// <param name="user">username</param>
         /// <param name="domain">optional domain which can be mapped to a privacyIDEA realm</param>
-        /// <param name="customAttributes">optional custom attributes to include</param>
+        /// <param name="customParameters">optional custom parameters to include</param>
         /// <param name="cancellationToken">optional</param>
         /// <returns>PIEnrollResponse object or null on error</returns>
-        public async Task<PIEnrollResponse?> TokenInit(string user, string? domain = null, Dictionary<string, string>? customAttributes = null, CancellationToken cancellationToken = default)
+        public async Task<PIEnrollResponse?> TokenInit(string user, string? domain = null, Dictionary<string, string>? customParameters = null, CancellationToken cancellationToken = default)
         {
             var parameters = new Dictionary<string, string>
             {
@@ -192,7 +192,7 @@ namespace PrivacyIDEA_Client
                 { "genkey", "1" }
             };
             AddRealmForDomain(domain, parameters);
-            AddCustomAttributes(customAttributes, parameters);
+            AddCustomParameters(customParameters, parameters);
 
             string response = await SendRequest("/token/init", parameters, "POST", new List<KeyValuePair<string, string>>(), cancellationToken);
             return PIEnrollResponse.FromJSON(response, this);
@@ -208,10 +208,10 @@ namespace PrivacyIDEA_Client
         /// <param name="transactionid">optional transaction id to refer to a challenge</param>
         /// <param name="domain">optional domain which can be mapped to a privacyIDEA realm</param>
         /// <param name="headers">optional headers which can be forwarded to the privacyIDEA server</param>
-        /// <param name="customAttributes">optional custom attributes to include</param>
+        /// <param name="customParameters">optional custom parameters to include</param>
         /// <param name="cancellationToken">optional</param>
         /// <returns>PIResponse object or null on error</returns>
-        public async Task<PIResponse?> ValidateCheck(string user, string otp, string? transactionid = null, string? domain = null, List<KeyValuePair<string, string>>? headers = null, Dictionary<string, string>? customAttributes = null, CancellationToken cancellationToken = default)
+        public async Task<PIResponse?> ValidateCheck(string user, string otp, string? transactionid = null, string? domain = null, List<KeyValuePair<string, string>>? headers = null, Dictionary<string, string>? customParameters = null, CancellationToken cancellationToken = default)
         {
             var parameters = new Dictionary<string, string>
             {
@@ -225,7 +225,7 @@ namespace PrivacyIDEA_Client
             }
 
             AddRealmForDomain(domain, parameters);
-            AddCustomAttributes(customAttributes, parameters);
+            AddCustomParameters(customParameters, parameters);
 
             string response = await SendRequest("/validate/check", parameters, "POST", headers, cancellationToken);
             return PIResponse.FromJSON(response, this);
@@ -241,10 +241,10 @@ namespace PrivacyIDEA_Client
         /// <param name="origin">origin also returned by the browser</param>
         /// <param name="domain">optional domain which can be mapped to a privacyIDEA realm</param>
         /// <param name="headers">optional headers which can be forwarded to the privacyIDEA server</param>
-        /// <param name="customAttributes">optional custom attributes to include</param>
+        /// <param name="customParameters">optional custom parameters to include</param>
         /// <param name="cancellationToken">optional</param>
         /// <returns>PIResponse object or null on error</returns>
-        public async Task<PIResponse?> ValidateCheckWebAuthn(string user, string transactionID, string webAuthnSignResponse, string origin, string? domain = null, List<KeyValuePair<string, string>>? headers = null, Dictionary<string, string>? customAttributes = null, CancellationToken cancellationToken = default)
+        public async Task<PIResponse?> ValidateCheckWebAuthn(string user, string transactionID, string webAuthnSignResponse, string origin, string? domain = null, List<KeyValuePair<string, string>>? headers = null, Dictionary<string, string>? customParameters = null, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(user) || string.IsNullOrEmpty(transactionID) || string.IsNullOrEmpty(webAuthnSignResponse) || string.IsNullOrEmpty(origin))
             {
@@ -290,7 +290,7 @@ namespace PrivacyIDEA_Client
                 }
 
                 AddRealmForDomain(domain, parameters);
-                AddCustomAttributes(customAttributes, parameters);
+                AddCustomParameters(customParameters, parameters);
 
                 // The origin has to be set in the header for WebAuthn authentication
                 headers ??= new List<KeyValuePair<string, string>>();
@@ -310,10 +310,10 @@ namespace PrivacyIDEA_Client
         /// Gets an auth token from the privacyIDEA server using the service account.
         /// Afterward, the token is set as the default authentication header for the HttpClient.
         /// </summary>
-        /// <param name="customAttributes">optional custom attributes to include</param>
+        /// <param name="customParameters">optional custom parameters to include</param>
         /// <param name="cancellationToken">optional</param>
         /// <returns>true if success, false otherwise</returns>
-        private async Task<bool> GetAuthToken(Dictionary<string, string>? customAttributes = null, CancellationToken cancellationToken = default)
+        private async Task<bool> GetAuthToken(Dictionary<string, string>? customParameters = null, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(_serviceUser) || string.IsNullOrEmpty(_servicePass))
             {
@@ -333,7 +333,7 @@ namespace PrivacyIDEA_Client
                     parameters.Add("realm", _serviceRealm);
                 }
 
-                AddCustomAttributes(customAttributes, parameters);
+                AddCustomParameters(customParameters, parameters);
 
                 string response = await SendRequest("/auth", parameters, "POST", null, cancellationToken);
 
@@ -489,15 +489,15 @@ namespace PrivacyIDEA_Client
         }
 
         /// <summary>
-        /// Adds custom attributes to request parameters.
+        /// Adds custom parameters to request.
         /// </summary>
-        /// <param name="customAttributes">Dictionary of custom attributes to add.</param>
+        /// <param name="customParameters">Dictionary of custom parameters to add.</param>
         /// <param name="parameters">The dictionary to add the parameters to.</param>
-        private static void AddCustomAttributes(Dictionary<string, string>? customAttributes, Dictionary<string, string> parameters)
+        private static void AddCustomParameters(Dictionary<string, string>? customParameters, Dictionary<string, string> parameters)
         {
-            if (customAttributes != null)
+            if (customParameters != null)
             {
-                foreach (var attribute in customAttributes)
+                foreach (var attribute in customParameters)
                 {
                     parameters.Add(attribute.Key, attribute.Value);
                 }
