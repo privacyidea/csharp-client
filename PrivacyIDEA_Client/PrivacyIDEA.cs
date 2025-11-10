@@ -320,7 +320,7 @@ namespace PrivacyIDEA_Client
         /// <param name="clientUserAgent">optional client user agent from header to forward to the privacyIDEA</param>
         /// <param name="cancellationToken">optional</param>
         /// <returns>true if success, false otherwise</returns>
-        private async Task<bool> GetAuthToken(, string? clientIP = null, string? clientUserAgent = null, CancellationToken cancellationToken = default)
+        private async Task<bool> GetAuthToken(string? clientIP = null, string? clientUserAgent = null, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(_serviceUser) || string.IsNullOrEmpty(_servicePass))
             {
